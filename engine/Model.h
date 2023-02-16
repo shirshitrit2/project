@@ -19,6 +19,7 @@ protected:
     Model(std::string name, const std::string& file, std::shared_ptr<Material> material);
     Model(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material);
     Model(std::string name, std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material);
+    Model(std::string name, std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material, Eigen::RowVector4f lightColor);
     Model(std::string name, std::vector<std::shared_ptr<Mesh>> meshList, std::shared_ptr<Material> material);
     Model(const Model& other) = default; // important: doesn't add itself to the parent's children (object isn't constructed yet)
     Model(Model&&) = default; // important: doesn't add itself to the parent's children (object isn't constructed yet)
@@ -56,9 +57,10 @@ private:
     std::vector<std::vector<igl::opengl::ViewerData>> viewerDataListPerMesh;
 
     // TODO: TAL: handle the colors...
-    Eigen::RowVector4f ambient = Eigen::RowVector4f(1.0, 1.0, 1.0, 1.0);
-    Eigen::RowVector4f diffuse = Eigen::RowVector4f(1.0, 1.0, 1.0, 1.0);
-    Eigen::RowVector4f specular = Eigen::RowVector4f(1.0, 1.0, 1.0, 1.0);
+    Eigen::RowVector4f ambient = Eigen::RowVector4f(127, 127, 0, 255);
+    Eigen::RowVector4f diffuse = Eigen::RowVector4f(25, 76, 153, 255);
+    Eigen::RowVector4f specular = Eigen::RowVector4f(127, 76, 25, 127);
+    Eigen::RowVector4f lightColor=Eigen::RowVector4f (0.0f,0.3f, 0.0f, 0);
 };
 
 } // namespace cg3d

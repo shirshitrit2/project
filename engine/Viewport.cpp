@@ -7,7 +7,8 @@ namespace cg3d
 
 void Viewport::Bind() const
 {
-    glViewport(x, y, width, height);
+    const int factor=1;
+    glViewport(x*factor, y*factor, width*factor, height*factor);
 }
 
 bool Viewport::IsInside(int _x, int _y) const

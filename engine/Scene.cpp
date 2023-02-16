@@ -158,4 +158,12 @@ void Scene::ViewportSizeCallback(Viewport* viewport)
     camera->SetProjection(float(viewport->width) / float(viewport->height));
 }
 
+    bool Scene::IsActive() const {
+        return animate;
+    }
+
+    void Scene::SetActive(bool animate) {
+        Scene::animate = animate;
+    }
+
 } // namespace cg3d

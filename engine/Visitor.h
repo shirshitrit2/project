@@ -20,6 +20,7 @@ public:
     virtual void Visit(Model* model);
     virtual void Visit(Movable* movable);
 
+
     Eigen::Matrix4f proj;
     Eigen::Matrix4f view;
     Eigen::Matrix4f norm;

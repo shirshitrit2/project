@@ -11,7 +11,7 @@ class SceneWithCameras : public cg3d::SceneWithImGui
 private:
     std::shared_ptr<Movable> root;
     std::shared_ptr<cg3d::Material> carbon;
-    bool animate = false;
+    //bool animate = false;
     void BuildImGui() override;
     std::vector<std::shared_ptr<cg3d::Camera>> camList{2};
     std::shared_ptr<cg3d::Model> cube1, cube2, cylinder, sphere1, sphere2,snake;
@@ -23,8 +23,9 @@ private:
 //    std::vector<Eigen::Vector3f> blueVelocities;
 //    float yellowVelocity = 0.05;
 //    float blueVelocity =0.01 ;
-    int offset = -99;
-    int range =  99 - offset +1;
+
+    int offset = 0;
+    int range =  0;
 //    std::vector<igl::AABB<Eigen::MatrixXd,3>> yellowTree;
 //    std::vector<igl::AABB<Eigen::MatrixXd,3>> blueTree;
     std::vector<Fruit> fruits;
@@ -33,6 +34,8 @@ private:
     int scoreCounter=0;
     double scale=0.5;
     std::shared_ptr<cg3d::Model> currSphere;
+    bool win,lose;
+    int limits=60;
 
 
 
@@ -46,8 +49,11 @@ public:
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
 
 private:
-    inline bool IsActive() const { return animate; };
-    inline void SetActive(bool _isActive = true) { animate = _isActive; }
+    //inline bool IsActive() const { return animate; };
+    //inline void SetActive(bool _isActive = true) { animate = _isActive; }
+//    virtual bool isActive() const  ;
+//
+//    virtual void setActive(bool animate);;
     void LoadObjectFromFileDialog();
     void SetCamera(int index);
 //    static std::shared_ptr<CamModel> CreateCameraWithModel(int width, int height, float fov, float near, float far, const std::shared_ptr<cg3d::Material>& material);

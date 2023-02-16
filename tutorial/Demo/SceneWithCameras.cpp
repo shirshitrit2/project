@@ -22,77 +22,138 @@ void SceneWithCameras::BuildImGui()
     int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     bool* pOpen = nullptr;
 
-    ImGui::Begin("Menu", pOpen, flags);
-    ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetWindowSize(ImVec2(0, 0), ImGuiCond_Always);
-    if (ImGui::Button("Load object"))
-        LoadObjectFromFileDialog();
+    if(animate){
+        ImGui::Begin("Menu", pOpen, flags);
+        ImGui::SetWindowPos(ImVec2(280, 0), ImGuiCond_Always);
+        ImGui::SetWindowSize(ImVec2(0, 0), ImGuiCond_Always);
+//    if (ImGui::Button("Load object"))
+//        LoadObjectFromFileDialog();
 
-    ImGui::Text("Camera: ");
-    for (int i = 0; i < camList.size(); i++) {
+
+        ImGui::Text("Score:");
+        std::string t = std::to_string(scoreCounter);
+        char const *n_char = t.c_str();
         ImGui::SameLine(0);
-        bool selectedCamera = camList[i] == camera;
-        if (selectedCamera)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-        if (ImGui::Button(std::to_string(i + 1).c_str()))
-            SetCamera(i);
-        if (selectedCamera)
-            ImGui::PopStyleColor();
+        ImGui::Text(n_char);
+
+
+
+
+        ImGui::Text("Camera: ");
+        for (int i = 0; i < camList.size(); i++) {
+            ImGui::SameLine(0);
+            bool selectedCamera = camList[i] == camera;
+            if (selectedCamera)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            if(i==0){
+                if (ImGui::Button("Top view"))
+                    SetCamera(i);
+            }
+            if(i==1){
+                if (ImGui::Button("Snake view"))
+                    SetCamera(i);
+            }
+//        if (ImGui::Button(std::to_string(i + 1).c_str()))
+//            SetCamera(i);
+            if (selectedCamera)
+                ImGui::PopStyleColor();
+        }
+        ImGui::End();
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Center"))
-        camera->SetTout(Eigen::Affine3f::Identity());
-    if (pickedModel) {
-        ImGui::Text("Picked model: %s", pickedModel->name.c_str());
-        ImGui::SameLine();
-        if (ImGui::Button("Drop"))
-            pickedModel = nullptr;
-        if (pickedModel) {
-            if (ImGui::CollapsingHeader("Draw options", ImGuiTreeNodeFlags_DefaultOpen)) {
-                ImGui::Checkbox("Show wireframe", &pickedModel->showWireframe);
-                if (pickedModel->showWireframe) {
-                    ImGui::Text("Wireframe color:");
-                    ImGui::SameLine();
-                    ImGui::ColorEdit4("Wireframe color", pickedModel->wireframeColor.data(), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                }
-                ImGui::Checkbox("Show faces", &pickedModel->showFaces);
-                ImGui::Checkbox("Show textures", &pickedModel->showTextures);
-                if (ImGui::Button("Scale down"))
-                    pickedModel->Scale(0.9f);
-                ImGui::SameLine();
-                if (ImGui::Button("Scale up"))
-                    pickedModel->Scale(1.1f);
+    else{
+
+        if(win){
+            ImGui::Begin("Menu", pOpen, flags);
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::Text("Level finished! ");
+            if (ImGui::Button("quit")){
+
             }
-            if (ImGui::Button("Dump model mesh data")) {
-                std::cout << "model name: " << pickedModel->name << std::endl;
-                if (pickedModel->meshIndex > 0)
-                    std::cout << "mesh index in use: " << pickedModel->meshIndex;
-                for (auto& mesh: pickedModel->GetMeshList()) {
-                    Eigen::IOFormat simple(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", "");
-                    std::cout << "mesh name: " << mesh->name << std::endl;
-                    for (int i = 0; i < mesh->data.size(); i++) {
-                        if (mesh->data.size() > 1)
-                            std::cout << "mesh #" << i + 1 << ":" << std::endl;
-                        DumpMeshData(simple, mesh->data[i]);
-                    }
-                }
+            else if (ImGui::Button("Next level")){
+                win=false;
+                SetActive(!IsActive());
+
             }
-            if (ImGui::Button("Dump model transformations")) {
-                Eigen::IOFormat format(2, 0, ", ", "\n", "[", "]");
-                const Eigen::Matrix4f& transform = pickedModel->GetAggregatedTransform();
-                std::cout << "Tin:" << std::endl << pickedModel->Tin.matrix().format(format) << std::endl
-                          << "Tout:" << std::endl << pickedModel->Tout.matrix().format(format) << std::endl
-                          << "Transform:" << std::endl << transform.matrix().format(format) << std::endl
-                          << "--- Transform Breakdown ---" << std::endl
-                          << "Rotation:" << std::endl << Movable::GetTranslation(transform).matrix().format(format) << std::endl
-                          << "Translation:" << std::endl << Movable::GetRotation(transform).matrix().format(format) << std::endl
-                          << "Rotation x Translation:" << std::endl << Movable::GetTranslationRotation(transform).matrix().format(format)
-                          << std::endl << "Scaling:" << std::endl << Movable::GetScaling(transform).matrix().format(format) << std::endl;
+            ImGui::End();
+        }
+        else if(lose){
+            ImGui::Begin("Menu", pOpen, flags);
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::Text("Game over! ");
+            ImGui::End();
+        }
+        else{
+            ImGui::Begin("Menu", pOpen, flags);
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::Text("Welcome!");
+            if (ImGui::Button("quit")){
+
             }
+            else if (ImGui::Button("Start")){
+                SetActive(!IsActive());
+            }
+            ImGui::End();
         }
     }
 
-    ImGui::End();
+
+//    ImGui::SameLine();
+//    if (ImGui::Button("Center"))
+//        camera->SetTout(Eigen::Affine3f::Identity());
+//    if (pickedModel) {
+//        ImGui::Text("Picked model: %s", pickedModel->name.c_str());
+//        ImGui::SameLine();
+//        if (ImGui::Button("Drop"))
+//            pickedModel = nullptr;
+//        if (pickedModel) {
+//            if (ImGui::CollapsingHeader("Draw options", ImGuiTreeNodeFlags_DefaultOpen)) {
+//                ImGui::Checkbox("Show wireframe", &pickedModel->showWireframe);
+//                if (pickedModel->showWireframe) {
+//                    ImGui::Text("Wireframe color:");
+//                    ImGui::SameLine();
+//                    ImGui::ColorEdit4("Wireframe color", pickedModel->wireframeColor.data(), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+//                }
+//                ImGui::Checkbox("Show faces", &pickedModel->showFaces);
+//                ImGui::Checkbox("Show textures", &pickedModel->showTextures);
+//                if (ImGui::Button("Scale down"))
+//                    pickedModel->Scale(0.9f);
+//                ImGui::SameLine();
+//                if (ImGui::Button("Scale up"))
+//                    pickedModel->Scale(1.1f);
+//            }
+//            if (ImGui::Button("Dump model mesh data")) {
+//                std::cout << "model name: " << pickedModel->name << std::endl;
+//                if (pickedModel->meshIndex > 0)
+//                    std::cout << "mesh index in use: " << pickedModel->meshIndex;
+//                for (auto& mesh: pickedModel->GetMeshList()) {
+//                    Eigen::IOFormat simple(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", "");
+//                    std::cout << "mesh name: " << mesh->name << std::endl;
+//                    for (int i = 0; i < mesh->data.size(); i++) {
+//                        if (mesh->data.size() > 1)
+//                            std::cout << "mesh #" << i + 1 << ":" << std::endl;
+//                        DumpMeshData(simple, mesh->data[i]);
+//                    }
+//                }
+//            }
+//            if (ImGui::Button("Dump model transformations")) {
+//                Eigen::IOFormat format(2, 0, ", ", "\n", "[", "]");
+//                const Eigen::Matrix4f& transform = pickedModel->GetAggregatedTransform();
+//                std::cout << "Tin:" << std::endl << pickedModel->Tin.matrix().format(format) << std::endl
+//                          << "Tout:" << std::endl << pickedModel->Tout.matrix().format(format) << std::endl
+//                          << "Transform:" << std::endl << transform.matrix().format(format) << std::endl
+//                          << "--- Transform Breakdown ---" << std::endl
+//                          << "Rotation:" << std::endl << Movable::GetTranslation(transform).matrix().format(format) << std::endl
+//                          << "Translation:" << std::endl << Movable::GetRotation(transform).matrix().format(format) << std::endl
+//                          << "Rotation x Translation:" << std::endl << Movable::GetTranslationRotation(transform).matrix().format(format)
+//                          << std::endl << "Scaling:" << std::endl << Movable::GetScaling(transform).matrix().format(format) << std::endl;
+//            }
+//        }
+//    }
+
+//    ImGui::End();
 }
 
 void SceneWithCameras::DumpMeshData(const Eigen::IOFormat& simple, const MeshData& data)
@@ -303,6 +364,16 @@ void SceneWithCameras::colidingSnakeWithBall(){
 //                root->AddChild(currSphere);
 
             }
+            //// Winning ball
+            if(fruits[i].getColor()=="red"){
+                SetActive(!IsActive());
+                win=true;
+            }
+            //// Bomb ball
+            if(fruits[i].getColor()=="black"){
+                SetActive(!IsActive());
+                lose=true;
+            }
             fruits[i].getModel()->Translate(Eigen::Vector3f(-3,0,-3));
             fruits[i].setVelocity(Eigen::Vector3f(0,0,0));
 
@@ -312,13 +383,16 @@ void SceneWithCameras::colidingSnakeWithBall(){
 }
 
 
+
+
 void SceneWithCameras::Init(float fov, int width, int height, float near, float far)
 {
     // create the basic elements of the scene
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    auto program = std::make_shared<Program>("shaders/basicShader"); // TODO: TAL: replace with hard-coded basic program
+    auto program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
     carbon = std::make_shared<Material>("carbon", program); // default material
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
+    auto material{ std::make_shared<Material>("material", program)}; // empty material
 
     // create the camera objects
     camList.resize(camList.capacity());
@@ -380,7 +454,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    autoSnake->showWireframe = true;
 //    root->AddChild(autoSnake);
 //    float scaleFactor = 0.5;
-    cyls.push_back( Model::Create("cylinder", Mesh::Cylinder(), grass));
+    cyls.push_back( Model::Create("first", Mesh::Cylinder(), grass));
     cyls[0]->Scale(scaleFactor,Axis::X);
     cyls[0]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
     root->AddChild(cyls[0]);
@@ -400,12 +474,21 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    yellowSpheres.push_back( Model::Create("sphere1", sphereMesh, grass));
 //    blueSpheres.push_back( Model::Create("sphere1", sphereMesh, bricks));
 //    cylinder->AddChildren({sphere1, sphere2});
-    Fruit a (Model::Create("sphere1", sphereMesh, grass), "blue") ;
-    Fruit b (Model::Create("sphere1", sphereMesh, grass), "blue") ;
-    Fruit c (Model::Create("sphere1", sphereMesh, grass), "blue") ;
-    Fruit d (Model::Create("sphere1", sphereMesh, bricks), "yellow") ;
-    Fruit e (Model::Create("sphere1", sphereMesh, bricks), "yellow") ;
-    Fruit f (Model::Create("sphere1", sphereMesh, bricks), "yellow") ;
+    Fruit a (Model::Create("sphere1", sphereMesh,material,Eigen::RowVector4f (0.0f,0.0f, 255.0f, 0.9f) ), "blue") ;
+    Fruit b (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (0.0f,0.0f, 255.0f, 0.9f)), "blue") ;
+    Fruit c (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (0.0f,0.0f, 255.0f, 0.9f)), "blue") ;
+    Fruit d (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,255.0f, 105.0f, 0.9f)), "yellow") ;
+    Fruit e (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,255.0f, 105.0f, 0.9f)), "yellow") ;
+    Fruit f (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,255.0f, 105.0f, 0.9f)), "yellow") ;
+    Fruit g (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,0.0f, 0.0f, 0.9f)), "red") ;
+    Fruit h (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,0.0f, 0.0f, 0.9f)), "red") ;
+    Fruit i (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (255.0f,0.0f, 0.0f, 0.9f)), "red") ;
+    Fruit j (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (0.0f,0.0f, 0.0f, 0.9f)), "black") ;
+    Fruit k (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (0.0f,0.0f, 0.0f, 0.9f)), "black") ;
+    Fruit l (Model::Create("sphere1", sphereMesh, material,Eigen::RowVector4f (0.0f,0.0f, 0.0f, 0.9f)), "black") ;
+
+
+
 
     fruits.push_back(a);
     fruits.push_back(b);
@@ -413,27 +496,71 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     fruits.push_back(d);
     fruits.push_back(e);
     fruits.push_back(f);
+    fruits.push_back(g);
+    fruits.push_back(h);
+    fruits.push_back(i);
+    fruits.push_back(j);
+    fruits.push_back(k);
+    fruits.push_back(l);
+
+    offset = -limits/2;
+    range =  limits/2 - offset +1;
+
+    for(int i=0;i<fruits.size();i++){
+        float x= (rand() % range + offset);
+        float y= 0;
+        float z= (rand() % range + offset);
+
+        fruits[i].getModel()->Translate(Eigen::Vector3f(x,y,z));
+
+        while(isCollide(fruits[i])) {
+            fruits[i].getModel()->Translate(Eigen::Vector3f(-x,-y,-z));
+            float x= (rand() % range + offset);
+            float y= 0;
+            float z= (rand() % range + offset);
+
+            fruits[i].getModel()->Translate(Eigen::Vector3f(x,y,z));
+        }
+    }
+//    float x1 = (rand() % range + offset);
+//    float z1 = (rand() % range + offset);
+//    float x2 = (rand() % range + offset)/10;
+//    float z2 = (rand() % range + offset)/10;
+//    float x3 = (rand() % range + offset)/10;
+//    float z3 = (rand() % range + offset)/10;
+//    float x4 = (rand() % range + offset)/10;
+//    float z4 = (rand() % range + offset)/10;
+//    float x5 = (rand() % range + offset)/10;
+//    float z5 = (rand() % range + offset)/10;
+//    float x6 = (rand() % range + offset)/10;
+//    float z6 = (rand() % range + offset)/10;
+//    float x7 = (rand() % range + offset)/10;
+//    float z7 = (rand() % range + offset)/10;
+//    float x8 = (rand() % range + offset)/10;
+//    float z8 = (rand() % range + offset)/10;
+//    float x9 = (rand() % range + offset)/10;
+//    float z9 = (rand() % range + offset)/10;
+//    float x10 = (rand() % range + offset)/10;
+//    float z10 = (rand() % range + offset)/10;
+//    float x11 = (rand() % range + offset)/10;
+//    float z11 = (rand() % range + offset)/10;
+//    float x12 = (rand() % range + offset)/10;
+//    float z12 = (rand() % range + offset)/10;
+//
+//    fruits[0].getModel()->Translate(Eigen::Vector3f(x1,0,z1));
+//    fruits[1].getModel()->Translate(Eigen::Vector3f(x2,0,z2));
+//    fruits[2].getModel()->Translate(Eigen::Vector3f(x3,0,z3));
+//    fruits[3].getModel()->Translate(Eigen::Vector3f(x4,0,z4));
+//    fruits[4].getModel()->Translate(Eigen::Vector3f(x5,0,z5));
+//    fruits[5].getModel()->Translate(Eigen::Vector3f(x6,0,z6));
+//    fruits[6].getModel()->Translate(Eigen::Vector3f(x7,0,z7));
+//    fruits[7].getModel()->Translate(Eigen::Vector3f(x8,0,z8));
+//    fruits[8].getModel()->Translate(Eigen::Vector3f(x9,0,z9));
+//    fruits[9].getModel()->Translate(Eigen::Vector3f(x10,0,z10));
+//    fruits[10].getModel()->Translate(Eigen::Vector3f(x11,0,z11));
+//    fruits[11].getModel()->Translate(Eigen::Vector3f(x12,0,z12));
 
 
-    float x1 = (rand() % range + offset)/10;
-    float z1 = (rand() % range + offset)/10;
-    float x2 = (rand() % range + offset)/10;
-    float z2 = (rand() % range + offset)/10;
-    float x3 = (rand() % range + offset)/10;
-    float z3 = (rand() % range + offset)/10;
-    float x4 = (rand() % range + offset)/10;
-    float z4 = (rand() % range + offset)/10;
-    float x5 = (rand() % range + offset)/10;
-    float z5 = (rand() % range + offset)/10;
-    float x6 = (rand() % range + offset)/10;
-    float z6 = (rand() % range + offset)/10;
-
-    fruits[0].getModel()->Translate(Eigen::Vector3f(x1,0,z1));
-    fruits[1].getModel()->Translate(Eigen::Vector3f(x2,0,z2));
-    fruits[2].getModel()->Translate(Eigen::Vector3f(x3,0,z3));
-    fruits[3].getModel()->Translate(Eigen::Vector3f(x4,0,z4));
-    fruits[4].getModel()->Translate(Eigen::Vector3f(x5,0,z5));
-    fruits[5].getModel()->Translate(Eigen::Vector3f(x6,0,z6));
 
 
 
@@ -450,6 +577,14 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     root->AddChild(fruits[3].getModel());
     root->AddChild(fruits[4].getModel());
     root->AddChild(fruits[5].getModel());
+    root->AddChild(fruits[6].getModel());
+    root->AddChild(fruits[7].getModel());
+    root->AddChild(fruits[8].getModel());
+    root->AddChild(fruits[9].getModel());
+    root->AddChild(fruits[10].getModel());
+    root->AddChild(fruits[11].getModel());
+
+
 
 
 //    currSphere= Model::Create("sphere1", sphereMesh, grass);
@@ -466,7 +601,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    initTrees(blueTree, blueSpheres);
 
 
-    background->Scale(60, Axis::XYZ);
+    background->Scale(limits, Axis::XYZ);
     background->SetPickable(false);
     background->SetStatic();
 }
@@ -475,26 +610,25 @@ void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, con
 {
     Scene::Update(p, proj, view, model);
     if (animate) {
-        cube1->Rotate(0.003f, {1, 1, 0});
-        cube2->Rotate(0.003f, {0, 1, 1});
-        camList[0]->Rotate(0.001f, Axis::Y);
-    }
+//        cube1->Rotate(0.003f, {1, 1, 0});
+//        cube2->Rotate(0.003f, {0, 1, 1});
+//        camList[0]->Rotate(0.001f, Axis::Y);
+
 //    std::cout<<"x"<<yellowSpheres[0]->GetTranslation().x()<<std::endl;
 //    std::cout<<"z"<<yellowSpheres[0]->GetTranslation().x()<<std::endl;
-    for(int i = 0;i <fruits.size(); i++)
-    {
-        std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
-        Eigen::Vector3f curVeloc = fruits[i].getVelocity();
-        if(curModel->GetTranslation().x()> 30 ||curModel->GetTranslation().x()<-30){
-            fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(),0,curVeloc.z()));
+        for (int i = 0; i < fruits.size(); i++) {
+            std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
+            Eigen::Vector3f curVeloc = fruits[i].getVelocity();
+            if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
+                fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), 0, curVeloc.z()));
+            }
+            if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
+                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), 0, -curVeloc.z()));
+            }
+            curModel->Translate(fruits[i].getVelocity());
         }
-        if(curModel->GetTranslation().z()> 30 ||curModel->GetTranslation().z()<-30){
-            fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(),0,-curVeloc.z()));
-        }
-        curModel->Translate(fruits[i].getVelocity());
+        colidingSnakeWithBall();
     }
-    colidingSnakeWithBall();
-
 }
 
 void SceneWithCameras::LoadObjectFromFileDialog()
@@ -507,8 +641,10 @@ void SceneWithCameras::LoadObjectFromFileDialog()
 
 void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods)
 {
+    Eigen::Matrix3f system=camera->GetRotation().transpose();
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
+
         if (key == GLFW_KEY_SPACE)
             SetActive(!IsActive());
 
@@ -517,6 +653,18 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
             if (int index; (index = (key - GLFW_KEY_1 + 10) % 10) < camList.size())
                 SetCamera(index);
         }
+        if(key == GLFW_KEY_UP)
+            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
+        if(key == GLFW_KEY_DOWN)
+            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
+        if(key == GLFW_KEY_RIGHT)
+            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
+        if(key == GLFW_KEY_LEFT)
+            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
+
+
+
+
     }
 
     SceneWithImGui::KeyCallback(nullptr, x, y, key, scancode, action, mods);
@@ -536,3 +684,11 @@ void SceneWithCameras::AddViewportCallback(Viewport* _viewport)
 
     Scene::AddViewportCallback(viewport);
 }
+
+//bool SceneWithCameras::isActive() const {
+//    return animate;
+//}
+//
+//void SceneWithCameras::setActive(bool animate) {
+//    Scene::animate = animate;
+//}

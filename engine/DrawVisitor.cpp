@@ -56,6 +56,11 @@ void DrawVisitor::Visit(Model* model)
         Eigen::Matrix4f modelTransform = model->isStatic ? model->GetAggregatedTransform() : norm * model->GetAggregatedTransform();
         const Program* program = model->material->BindProgram();
         scene->Update(*program, proj, view, modelTransform);
+        program->SetUniform4fv("lightColor", 1, reinterpret_cast<const Eigen::Vector4f *>(&(model->lightColor)));
+        program->SetUniform4fv("Kai", 1, reinterpret_cast<const Eigen::Vector4f *>(&(model->ambient)));
+        program->SetUniform4fv("Ksi", 1, reinterpret_cast<const Eigen::Vector4f *>(&(model->diffuse)));
+        program->SetUniform1f("specular_exponent", 1.0f);
+        program->SetUniform4f("light_position", -800.0, -800.0f, -800.0f, 1.0f);
         // glEnable(GL_LINE_SMOOTH);
         glLineWidth(model->lineWidth);
 

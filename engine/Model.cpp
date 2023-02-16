@@ -30,6 +30,12 @@ Model::Model(std::string name, std::vector<std::shared_ptr<Mesh>> meshList, std:
     SetMeshList(std::move(meshList));
 }
 
+Model::Model(std::string name, std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material, Eigen::RowVector4f lightColor)
+: Model{std::move(name), std::vector<std::shared_ptr<Mesh>>{{std::move(mesh)}}, std::move(material)} {
+    this->lightColor=lightColor;
+}
+
+
 std::vector<igl::opengl::ViewerData> Model::CreateViewerData(const std::shared_ptr<Mesh>& mesh)
 {
     std::vector<igl::opengl::ViewerData> dataList;

@@ -46,13 +46,18 @@ public:
     virtual void KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods);
     virtual void CharCallback(Viewport* viewport, int x, int y, unsigned int codepoint);
     virtual void ViewportSizeCallback(Viewport* viewport);
-    virtual void AddViewportCallback(Viewport* viewport) {};
+    virtual void AddViewportCallback(Viewport* viewport) {}
+
+    virtual bool IsActive() const  ;
+
+    virtual void SetActive(bool animate);
 
 protected:
     Renderer* renderer; // required for picking
     int xAtPress = -1, yAtPress = -1;
     float pickedModelDepth = 0;
     Eigen::Affine3f pickedToutAtPress, cameraToutAtPress;
+    bool animate=false;
 };
 
 } // namespace cg3d

@@ -8,10 +8,16 @@
 #include "Model.h"
 Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color) : model(model), color(color) {
     if(color=="blue"){
-        this->velocity = findVelocity(0.1);
+        this->velocity = findVelocity(0.01);
     }
     if(color=="yellow"){
-        this->velocity = findVelocity(0.1);
+        this->velocity = findVelocity(0.01);
+    }
+    if(color=="red"){
+        this->velocity = findVelocity(0.01);
+    }
+    if(color=="black"){
+        this->velocity= findVelocity(0.01);
     }
     initTree();
 

@@ -7,7 +7,7 @@
   in vec3 normal_eye;
   uniform vec4 light_position;
   uniform vec4 lightColor;
-  in vec4 Ksi;
+  uniform vec4 Ksi;
   uniform vec4 Kdi;
   uniform vec4 Kai;
   in vec2 texcoordi;
