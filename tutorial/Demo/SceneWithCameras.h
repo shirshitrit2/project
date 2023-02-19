@@ -34,8 +34,10 @@ private:
     int scoreCounter=0;
     double scale=0.5;
     std::shared_ptr<cg3d::Model> currSphere;
-    bool win,lose;
+    bool win=false;
+    bool lose=false;
     int limits=60;
+    int speedTimer=0;
 
 
 
@@ -63,8 +65,9 @@ private:
     bool findSmallestBox(igl::AABB<Eigen::MatrixXd,3> tree1,igl::AABB<Eigen::MatrixXd,3> tree2,Fruit f);
     bool isCollide(Fruit f);
     void initSnakeTree();
-    void colidingBalls();
-    void colidingSnakeWithBall();
+    void collidingBalls();
+    void collidingSnakeWithBall();
+    void handleSound();
 
 };
 

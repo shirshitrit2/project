@@ -21,8 +21,10 @@ namespace cg3d
     void AnimationVisitor::Visit(Model* model) {
         Eigen::Matrix3f system= model->GetRotation();
         if(scene->IsActive()){
-            if(model->name == std::string("first") )
-                model->TranslateInSystem(system, Eigen::Vector3f(-0.01f,0,0));
+            if(model->name == std::string("first") ){
+                model->TranslateInSystem(system, Eigen::Vector3f(-0.01f*scene->speedFactor,0,0));
+
+            }
         }
 
 

@@ -18,7 +18,7 @@ public:
     std::string name;
 
     Display(std::string title, int width, int height, Renderer* renderer);
-    Display(const Display&) = delete; // disable copy constructor
+    Display(const Display&) = default; // disable copy constructor
     ~Display();
     void LaunchRendering(bool loop) const;
     void SwapBuffers() const;

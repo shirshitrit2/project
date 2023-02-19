@@ -51,6 +51,10 @@ public:
     virtual bool IsActive() const  ;
 
     virtual void SetActive(bool animate);
+    float speedFactor=1; //For speeding snake's speed
+
+
+    void setDisplay(const Display &display);
 
 protected:
     Renderer* renderer; // required for picking
@@ -58,6 +62,7 @@ protected:
     float pickedModelDepth = 0;
     Eigen::Affine3f pickedToutAtPress, cameraToutAtPress;
     bool animate=false;
+    Display mydisplay;
 };
 
 } // namespace cg3d

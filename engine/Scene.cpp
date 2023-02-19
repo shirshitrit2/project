@@ -11,9 +11,10 @@
 namespace cg3d
 {
 
-Scene::Scene(std::string name, Display* display) : Movable(std::move(name)), renderer(display->renderer)
+Scene::Scene(std::string name, Display* display) : Movable(std::move(name)), renderer(display->renderer), mydisplay(*display)
 {
     window = display->window;
+    mydisplay=*display;
 }
 
 void Scene::Init(Visitor* visitor)
@@ -164,6 +165,10 @@ void Scene::ViewportSizeCallback(Viewport* viewport)
 
     void Scene::SetActive(bool animate) {
         Scene::animate = animate;
+    }
+
+    void Scene::setDisplay(const Display &display) {
+        Scene::mydisplay = display;
     }
 
 } // namespace cg3d
