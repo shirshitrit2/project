@@ -82,6 +82,7 @@ void SceneWithCameras::BuildImGui()
             }
             else if (ImGui::Button("Next level")){
                 win=false;
+                level++;
                 SetActive(!IsActive());
                 init();
             }
@@ -341,6 +342,127 @@ bool SceneWithCameras::isCollide(Fruit f){
 
 
 }
+
+bool SceneWithCameras::isSnakeCollide(int i){
+
+    std::shared_ptr<cg3d::Model> model1=cyls[i];
+    igl::AABB<Eigen::MatrixXd,3> tree1;
+    auto mesh = cyls[i]->GetMeshList();
+    Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;
+    Eigen::MatrixXi F1 = mesh[0]->data[0].faces;
+    tree1.init(V1,F1);
+
+    std::shared_ptr<cg3d::Model> model2=cyls[0];
+    igl::AABB<Eigen::MatrixXd,3> tree2=snakeTree;
+
+    Eigen::AlignedBox<double,3> box1=tree1.m_box;
+    Eigen::AlignedBox<double,3> box2=tree2.m_box;
+
+//    double scale=1;
+    double a0=box1.sizes()[0]*scale/2;
+    double a1=box1.sizes()[1]*scale/2;
+    double a2=box1.sizes()[2]*scale/2;
+
+    double b0=box2.sizes()[0]*scale/2;
+    double b1=box2.sizes()[1]*scale/2;
+    double b2=box2.sizes()[2]*scale/2;
+
+    Eigen::MatrixXd A=model1->GetRotation().cast<double>();
+    Eigen::MatrixXd B=model2->GetRotation().cast<double>();
+
+    Eigen::Vector3d A0=A*Eigen::Vector3d(1,0,0);
+    Eigen::Vector3d A1=A*Eigen::Vector3d(0,1,0);
+    Eigen::Vector3d A2=A*Eigen::Vector3d(0,0,1);
+
+
+    Eigen::Vector3d B0=B*Eigen::Vector3d(1,0,0);
+    Eigen::Vector3d B1=B*Eigen::Vector3d(0,1,0);
+    Eigen::Vector3d B2=B*Eigen::Vector3d(0,0,1);
+
+    Eigen::MatrixXd C=A.transpose()*B;
+
+    Eigen::Vector4f center0={box1.center().x(),box1.center().y(),box1.center().z(),1};
+    Eigen::Vector4f C0=model1->GetTransform()*center0;
+    Eigen::Vector4f center1={box2.center().x(),box2.center().y(),box2.center().z(),1};
+    Eigen::Vector4f C1=model2->GetTransform()*center1;
+
+
+    Eigen::Vector3d newC0= {C0[0],C0[1],C0[2]};
+    Eigen::Vector3d newC1= {C1[0],C1[1],C1[2]};
+
+    Eigen::Vector3d D=newC1-newC0;
+
+    if(abs(A0.dot(D)) > a0+(b0 * abs(C(0, 0))) + (b1 * abs(C(0, 1))) + (b2 * abs(C(0, 2)))){
+        return false;
+    }
+
+    if(abs(A1.dot(D)) > a1+(b0 * abs(C(1, 0))) + (b1 * abs(C(1, 1))) + (b2 * abs(C(1, 2)))){
+        return false;
+    }
+
+    if(abs(A2.dot(D)) > a2+(b0 * abs(C(2, 0))) + (b1 * abs(C(2, 1))) + (b2 * abs(C(2, 2)))){
+        return false;
+    }
+
+    if(abs(B0.dot(D)) > (a0 * abs(C(0, 0))) + (a1 * abs(C(1, 0))) + (a2 * abs(C(2, 0))) + b0){
+        return false;
+    }
+
+    if(abs(B1.dot(D)) > (a0 * abs(C(0, 1))) + (a1 * abs(C(1, 1))) + (a2 * abs(C(2, 1)))+b1){
+        return false;
+    }
+
+    if(abs(B2.dot(D)) > (a0 * abs(C(0, 2))) + (a1 * abs(C(1, 2))) + (a2 * abs(C(2, 2)))+b2){
+        return false;
+    }
+
+    if(abs((C(1, 0) * A2).dot(D) - (C(2, 0) * A1).dot(D)) > (a1 * abs(C(2, 0))) + (a2 * abs(C(1, 0))) + (b1 * abs(C(0, 2))) + (b2 * abs(C(0, 1))) )
+    {
+        return false;
+    }
+
+    if(abs((C(1, 1) * A2).dot(D) - (C(2, 1) * A1).dot(D)) > (a1 * abs(C(2, 1))) + (a2 * abs(C(1, 1))) + (b0 * abs(C(0, 2))) + (b2 * abs(C(0, 0))) )
+    {
+        return false;
+    }
+
+    if(abs((C(1, 2) * A2).dot(D) - (C(2, 2) * A1).dot(D)) > (a1 * abs(C(2, 2))) + (a2 * abs(C(1, 2))) + (b0 * abs(C(0, 1))) + (b1 * abs(C(0, 0))))
+    {
+        return false;
+    }
+
+    if(abs((C(2, 0) * A0).dot(D) - (C(0, 0) * A2).dot(D)) >(a0 * abs(C(2, 0))) + (a2 * abs(C(0, 0))) + (b1 * abs(C(1, 2))) + (b2 * abs(C(1, 1))) )
+    {
+        return false;
+    }
+
+    if(abs((C(2, 1) * A0).dot(D) - (C(0, 1) * A2).dot(D)) > (a0 * abs(C(2, 1))) + (a2 * abs(C(0, 1))) +(b0 * abs(C(1, 2))) + (b2 * abs(C(1, 0))) )
+    {
+        return false;
+    }
+
+    if(abs((C(2, 2) * A0).dot(D) - (C(0, 2) * A2).dot(D)) > (a0 * abs(C(2, 2))) + (a2 * abs(C(0, 2))) + (b0 * abs(C(1, 1))) + (b1 * abs(C(1, 0))))
+    {
+        return false;
+    }
+
+    if(abs((C(0, 0) * A1).dot(D) - (C(1, 0) * A0).dot(D)) > (a0 * abs(C(1, 0))) + (a1 * abs(C(0, 0))) +(b1 * abs(C(2, 2))) + (b2 * abs(C(2, 1))) )
+    {
+        return false;
+    }
+
+    if(abs((C(0, 1) * A1).dot(D) - (C(1, 1) * A0).dot(D)) > (a0 * abs(C(1, 1))) + (a1 * abs(C(0, 1))) + (b0 * abs(C(2, 2))) + (b2 * abs(C(2, 0))))
+    {
+        return false;
+    }
+
+    if(abs((C(0, 2) * A1).dot(D) - (C(1, 2) * A0).dot(D)) > (a0 * abs(C(1, 2))) + (a1 * abs(C(0, 2))) + (b0 * abs(C(2, 1))) + (b1 * abs(C(2, 0)))) {
+        return false;
+    }
+    return true;
+
+}
+
 void SceneWithCameras::initSnakeTree(){
     auto mesh = cyls[0]->GetMeshList();
     Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;
@@ -379,6 +501,7 @@ void SceneWithCameras::collidingSnakeWithBall(){
             //// Winning ball
             if(fruits[i].getColor()=="red"){
                 SetActive(!IsActive());
+                init();
                 win=true;
             }
             //// Bomb ball
@@ -389,7 +512,7 @@ void SceneWithCameras::collidingSnakeWithBall(){
             //// Speed ball
             if(fruits[i].getColor()=="green"){
                 speedFactor=speedFactor*10;
-                speedTimer=10;
+                speedTimer=720;
                 std::cout<<"speed up"<<std::endl;
 
             }
@@ -484,6 +607,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         cyls[i-1]->AddChild(cyls[i]);
     }
     cyls[0]->Translate({0.8f*scaleFactor,0,0});
+    cyls[0]->AddChild(camList[1]);
 
     initSnakeTree();
 
@@ -509,8 +633,8 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black");
+    for(int i=0; i<level; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         fruits.push_back(f);
     }
     //// Green fruits- speed
@@ -524,6 +648,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     //// Placing the fruits randomly
     offset = -limits/2;
     range =  limits/2 - offset +1;
+    scale=1;
 
     for(int i=0;i<fruits.size();i++){
         float x= (rand() % range + offset);
@@ -540,6 +665,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
             fruits[i].getModel()->Translate(Eigen::Vector3f(x,y,z));
         }
+        scale=0.5;
     }
 
 
@@ -593,12 +719,20 @@ void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, con
         collidingSnakeWithBall();
     }
 
+    //// Handle speed boost timer
     if(speedTimer>0){
         speedTimer--;
         if(speedTimer==0) {
             speedFactor = speedFactor / 10;
             std::cout<<"speed down"<<std::endl;
 
+        }
+    }
+
+    //// Check self collision of the snake
+    for(int i=1;i<cyls.size();i++){
+        if(isSnakeCollide(i)){
+//            lose=true;
         }
     }
 }
@@ -613,7 +747,7 @@ void SceneWithCameras::LoadObjectFromFileDialog()
 
 void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods)
 {
-    Eigen::Matrix3f system=camera->GetRotation().transpose();
+    Eigen::Matrix3f system=cyls[0]->GetRotation().transpose();
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
 
@@ -626,13 +760,13 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
                 SetCamera(index);
         }
         if(key == GLFW_KEY_UP)
-            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
-        if(key == GLFW_KEY_DOWN)
             cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
+        if(key == GLFW_KEY_DOWN)
+            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
         if(key == GLFW_KEY_RIGHT)
-            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
-        if(key == GLFW_KEY_LEFT)
             cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
+        if(key == GLFW_KEY_LEFT)
+            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
 
     }
 

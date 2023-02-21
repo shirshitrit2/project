@@ -26,6 +26,12 @@ Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color
 
 }
 
+Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color, const float velocityFactor) : model(model), color(color) {
+    this->velocity= findVelocity(velocityFactor);
+    initTree();
+}
+
+
 void Fruit::initTree(){
     auto mesh = model->GetMeshList();
     Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;

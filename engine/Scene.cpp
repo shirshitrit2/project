@@ -115,18 +115,18 @@ void Scene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode,
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
-            case GLFW_KEY_UP:
-                camera->RotateInSystem(system, 0.1f, Axis::X);
-                break;
-            case GLFW_KEY_DOWN:
-                camera->RotateInSystem(system, -0.1f, Axis::X);
-                break;
-            case GLFW_KEY_LEFT:
-                camera->RotateInSystem(system, 0.1f, Axis::Y);
-                break;
-            case GLFW_KEY_RIGHT:
-                camera->RotateInSystem(system, -0.1f, Axis::Y);
-                break;
+//            case GLFW_KEY_UP:
+//                camera->RotateInSystem(system, 0.1f, Axis::X);
+//                break;
+//            case GLFW_KEY_DOWN:
+//                camera->RotateInSystem(system, -0.1f, Axis::X);
+//                break;
+//            case GLFW_KEY_LEFT:
+//                camera->RotateInSystem(system, 0.1f, Axis::Y);
+//                break;
+//            case GLFW_KEY_RIGHT:
+//                camera->RotateInSystem(system, -0.1f, Axis::Y);
+//                break;
             case GLFW_KEY_W:
                 camera->TranslateInSystem(system, {0, 0.05f, 0});
                 break;

@@ -18,6 +18,7 @@ private:
 
 public:
     Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color);
+    Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color, const float velocityFactor);
 
     const std::shared_ptr<cg3d::Model> &getModel() const;
 

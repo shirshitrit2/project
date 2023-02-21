@@ -38,6 +38,7 @@ private:
     bool lose=false;
     int limits=60;
     int speedTimer=0;
+    int level=0;
 
 
 
@@ -49,6 +50,7 @@ public:
     void KeyCallback(cg3d::Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods) override;
     void AddViewportCallback(cg3d::Viewport* _viewport) override;
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
+    bool isSnakeCollide(int i);
 
 private:
     //inline bool IsActive() const { return animate; };
