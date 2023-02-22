@@ -4,6 +4,7 @@
 #include "CamModel.h"
 #include "igl/AABB.h"
 #include "Fruit.h"
+#include "Cyl.h"
 
 
 class SceneWithCameras : public cg3d::SceneWithImGui
@@ -16,7 +17,7 @@ private:
     std::vector<std::shared_ptr<cg3d::Camera>> camList{2};
     std::shared_ptr<cg3d::Model> cube1, cube2, cylinder, sphere1, sphere2,snake;
     cg3d::Viewport* viewport = nullptr;
-    std::vector<std::shared_ptr<cg3d::Model>> cyls;
+    std::vector<Cyl> cyls;
 //    std::vector<std::shared_ptr<cg3d::Model>> yellowSpheres;
 //    std::vector<std::shared_ptr<cg3d::Model>> blueSpheres;
 //    std::vector<Eigen::Vector3f> yellowVelocities;
@@ -51,7 +52,8 @@ public:
     void AddViewportCallback(cg3d::Viewport* _viewport) override;
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     bool isSnakeCollide(int i);
-
+    void loadTurn(bool direction, bool isAxisZ);
+    Eigen::Vector3f getPosition(float time, Eigen::Vector3f p1, Eigen::Vector3f p2);
 private:
     //inline bool IsActive() const { return animate; };
     //inline void SetActive(bool _isActive = true) { animate = _isActive; }
@@ -70,6 +72,7 @@ private:
     void collidingBalls();
     void collidingSnakeWithBall();
     void handleSound();
+    void ourUpdate();
 
 };
 

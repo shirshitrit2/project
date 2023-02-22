@@ -106,6 +106,7 @@ void SceneWithCameras::BuildImGui()
             }
             else if (ImGui::Button("Start")){
                 SetActive(!IsActive());
+                init();
             }
             ImGui::End();
         }
@@ -231,7 +232,7 @@ bool SceneWithCameras::isCollide(Fruit f){
 
     igl::AABB<Eigen::MatrixXd,3> tree1 = f.getTree();
     std::shared_ptr<cg3d::Model> model1 = f.getModel();
-    std::shared_ptr<cg3d::Model> model2=cyls[0];
+    std::shared_ptr<cg3d::Model> model2=cyls[0].getCyl();
     igl::AABB<Eigen::MatrixXd,3> tree2=snakeTree;
 
     Eigen::AlignedBox<double,3> box1=tree1.m_box;
@@ -345,14 +346,14 @@ bool SceneWithCameras::isCollide(Fruit f){
 
 bool SceneWithCameras::isSnakeCollide(int i){
 
-    std::shared_ptr<cg3d::Model> model1=cyls[i];
+    std::shared_ptr<cg3d::Model> model1=cyls[i].getCyl();
     igl::AABB<Eigen::MatrixXd,3> tree1;
-    auto mesh = cyls[i]->GetMeshList();
+    auto mesh = cyls[i].getCyl()->GetMeshList();
     Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;
     Eigen::MatrixXi F1 = mesh[0]->data[0].faces;
     tree1.init(V1,F1);
 
-    std::shared_ptr<cg3d::Model> model2=cyls[0];
+    std::shared_ptr<cg3d::Model> model2=cyls[0].getCyl();
     igl::AABB<Eigen::MatrixXd,3> tree2=snakeTree;
 
     Eigen::AlignedBox<double,3> box1=tree1.m_box;
@@ -464,7 +465,7 @@ bool SceneWithCameras::isSnakeCollide(int i){
 }
 
 void SceneWithCameras::initSnakeTree(){
-    auto mesh = cyls[0]->GetMeshList();
+    auto mesh = cyls[0].getCyl()->GetMeshList();
     Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;
     Eigen::MatrixXi F1 = mesh[0]->data[0].faces;
     snakeTree.init(V1,F1);
@@ -594,20 +595,22 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    float scaleFactor = 0.5;
 
     //// Snake:
-    cyls.push_back( Model::Create("first", Mesh::Cylinder(), grass));
-    cyls[0]->Scale(scaleFactor,Axis::X);
-    cyls[0]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
-    root->AddChild(cyls[0]);
+    Cyl cur(Model::Create("first", Mesh::Cylinder(), grass));
+    cyls.push_back( cur);
+    cyls[0].getCyl()->Scale(scaleFactor,Axis::X);
+    cyls[0].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+    root->AddChild(cyls[0].getCyl());
     for(int i = 1;i < 15; i++)
     {
-        cyls.push_back( Model::Create("cylinder", Mesh::Cylinder(), grass));
-        cyls[i]->Scale(scaleFactor,Axis::X);
-        cyls[i]->Translate(1.6f*scaleFactor,Axis::X);
-        cyls[i]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
-        cyls[i-1]->AddChild(cyls[i]);
+        Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), grass));
+        cyls.push_back( cur);
+        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
+        cyls[i].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
+        cyls[i].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+        root->AddChild(cyls[i].getCyl());
     }
-    cyls[0]->Translate({0.8f*scaleFactor,0,0});
-    cyls[0]->AddChild(camList[1]);
+    cyls[0].getCyl()->Translate({0.8f*scaleFactor,0,0});
+    cyls[0].getCyl()->AddChild(camList[1]);
 
     initSnakeTree();
 
@@ -698,26 +701,53 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     background->Scale(limits, Axis::XYZ);
     background->SetPickable(false);
     background->SetStatic();
+
+    std::thread([&]() {
+        while (IsActive()) {
+            this->ourUpdate();
+            std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        }
+    }).detach();
+
 }
 
-void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
-{
-    Scene::Update(p, proj, view, model);
-    if (animate) {
-        //// Check that balls doesn't move outside the box
-        for (int i = 0; i < fruits.size(); i++) {
-            std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
-            Eigen::Vector3f curVeloc = fruits[i].getVelocity();
-            if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
-                fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), 0, curVeloc.z()));
-            }
-            if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
-                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), 0, -curVeloc.z()));
-            }
-            curModel->Translate(fruits[i].getVelocity());
+
+void SceneWithCameras::ourUpdate(){
+    std::cout<< "update"<<std::endl;
+    for(int i=0;i<cyls.size();i++){
+        if(cyls[i].isRotationEmpty()){
+            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+            cyls[i].getCyl()->TranslateInSystem(system, Eigen::Vector3f(-0.1f*speedFactor,0,0));
         }
-        collidingSnakeWithBall();
+        else{
+            cyls[i].getCyl()->Translate(cyls[i].getTranslation());
+            if(cyls[i].getRotation()[0]==3.0){
+                cyls[i].getCyl()->RotateByDegree(cyls[i].getRotation()[1],Axis::Z);
+            }
+            else{
+                cyls[i].getCyl()->RotateByDegree(cyls[i].getRotation()[1],Axis::Y);
+            }
+        }
+
     }
+    //// Check that balls doesn't move outside the box
+    for (int i = 0; i < fruits.size(); i++) {
+        std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
+        Eigen::Vector3f curVeloc = fruits[i].getVelocity();
+        if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
+            fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), curVeloc.y(), curVeloc.z()));
+        }
+        if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
+            fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), curVeloc.y(), -curVeloc.z()));
+        }
+        if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
+            fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
+        }
+        curModel->Translate(fruits[i].getVelocity());
+    }
+
+    collidingSnakeWithBall();
+
 
     //// Handle speed boost timer
     if(speedTimer>0){
@@ -737,6 +767,43 @@ void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, con
     }
 }
 
+void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
+{
+    Scene::Update(p, proj, view, model);
+//    if (animate) {
+//        //// Check that balls doesn't move outside the box
+//        for (int i = 0; i < fruits.size(); i++) {
+//            std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
+//            Eigen::Vector3f curVeloc = fruits[i].getVelocity();
+//            if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
+//                fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), 0, curVeloc.z()));
+//            }
+//            if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
+//                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), 0, -curVeloc.z()));
+//            }
+//            curModel->Translate(fruits[i].getVelocity());
+//        }
+//        collidingSnakeWithBall();
+//    }
+//
+//    //// Handle speed boost timer
+//    if(speedTimer>0){
+//        speedTimer--;
+//        if(speedTimer==0) {
+//            speedFactor = speedFactor / 10;
+//            std::cout<<"speed down"<<std::endl;
+//
+//        }
+//    }
+//
+//    //// Check self collision of the snake
+//    for(int i=1;i<cyls.size();i++){
+//        if(isSnakeCollide(i)){
+////            lose=true;
+//        }
+//    }
+}
+
 void SceneWithCameras::LoadObjectFromFileDialog()
 {
     std::string filename = igl::file_dialog_open();
@@ -747,7 +814,7 @@ void SceneWithCameras::LoadObjectFromFileDialog()
 
 void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods)
 {
-    Eigen::Matrix3f system=cyls[0]->GetRotation().transpose();
+    Eigen::Matrix3f system=cyls[0].getCyl()->GetRotation().transpose();
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
 
@@ -759,19 +826,65 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
             if (int index; (index = (key - GLFW_KEY_1 + 10) % 10) < camList.size())
                 SetCamera(index);
         }
-        if(key == GLFW_KEY_UP)
-            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
-        if(key == GLFW_KEY_DOWN)
-            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
-        if(key == GLFW_KEY_RIGHT)
-            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
-        if(key == GLFW_KEY_LEFT)
-            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
+        if(key == GLFW_KEY_UP){
+            loadTurn(false,true);
+        }
+//            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
+        if(key == GLFW_KEY_DOWN){
+            loadTurn(true,true);
+        }
+//            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
+        if(key == GLFW_KEY_RIGHT){
+            loadTurn(false, false);
+
+        }
+//            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
+        if(key == GLFW_KEY_LEFT){
+            loadTurn(true, false);
+
+        }
+//            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
 
     }
 
     SceneWithImGui::KeyCallback(nullptr, x, y, key, scancode, action, mods);
 }
+
+void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
+    int dir=-1;
+    if(direction){
+        dir=1;
+    }
+    if(isAxisZ){ ////down
+        for(int i=1;i<=50;i++){
+
+            Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-0.8,-0.8,0);
+            float time = i/50;
+           cyls[0].setTranslation(getPosition(time,p1,p2));
+           cyls[0].setRotation(Eigen::Vector2f (3.0,0.2*i/50*dir));
+        }
+    } else{////right
+        for(int i=1;i<=50;i++){
+            Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-0.8,0,-0.8);
+            float time = i/50;
+            cyls[0].setTranslation(getPosition(time,p1,p2));
+            cyls[0].setRotation(Eigen::Vector2f (2.0,0.2*i/50*dir));
+        }
+    }
+}
+
+
+Eigen::Vector3f SceneWithCameras::getPosition(float time, Eigen::Vector3f p1, Eigen::Vector3f p2) {
+    if(time < 0 || time > 1)
+        throw std::invalid_argument("Time out of bounds for curve");
+    Eigen::Vector3f pos = Eigen::Vector3f(0,0,0);
+    pos += pow((1-time), 2) * pow(time, 0) * p1;
+    pos+=2 * pow((1-time), 1) * pow(time, 1) * p2;
+    return pos;
+}
+
 
 void SceneWithCameras::ViewportSizeCallback(Viewport* _viewport)
 {
