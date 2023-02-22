@@ -84,7 +84,7 @@ void SceneWithCameras::BuildImGui()
                 win=false;
                 level++;
                 SetActive(!IsActive());
-                init();
+                Init(45.0f,800,800,0.1f,120.0f);
             }
             ImGui::End();
         }
@@ -106,7 +106,13 @@ void SceneWithCameras::BuildImGui()
             }
             else if (ImGui::Button("Start")){
                 SetActive(!IsActive());
-                init();
+                std::thread([&]() {
+                    while (IsActive()) {
+                        this->ourUpdate();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                    }
+                }).detach();
+//                Init(45.0f,800,800,0.1f,120.0f);
             }
             ImGui::End();
         }
@@ -598,18 +604,20 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     Cyl cur(Model::Create("first", Mesh::Cylinder(), grass));
     cyls.push_back( cur);
     cyls[0].getCyl()->Scale(scaleFactor,Axis::X);
-    cyls[0].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+//    cyls[0].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
     root->AddChild(cyls[0].getCyl());
     for(int i = 1;i < 15; i++)
     {
         Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), grass));
         cyls.push_back( cur);
-        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
+//        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
         cyls[i].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
-        cyls[i].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+//        cyls[i].getCyl()->Translate(Eigen::Vector3f(0.8f*scaleFactor,0,0));
+        cyls[i].getCyl()->Rotate(cyls[i-1].getCyl()->GetRotation());
+        cyls[i].getCyl()->Translate(cyls[i-1].getCyl()->GetTranslation());
         root->AddChild(cyls[i].getCyl());
     }
-    cyls[0].getCyl()->Translate({0.8f*scaleFactor,0,0});
+//    cyls[0].getCyl()->Translate({0.8f*scaleFactor,0,0});
     cyls[0].getCyl()->AddChild(camList[1]);
 
     initSnakeTree();
@@ -655,7 +663,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
     for(int i=0;i<fruits.size();i++){
         float x= (rand() % range + offset);
-        float y= 0;
+        float y= (rand() % range + offset);
         float z= (rand() % range + offset);
 
         fruits[i].getModel()->Translate(Eigen::Vector3f(x,y,z));
@@ -663,7 +671,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         while(isCollide(fruits[i])) {
             fruits[i].getModel()->Translate(Eigen::Vector3f(-x,-y,-z));
             float x= (rand() % range + offset);
-            float y= 0; // should be random too
+            float y= (rand() % range + offset); // should be random too
             float z= (rand() % range + offset);
 
             fruits[i].getModel()->Translate(Eigen::Vector3f(x,y,z));
@@ -702,31 +710,47 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     background->SetPickable(false);
     background->SetStatic();
 
-    std::thread([&]() {
-        while (IsActive()) {
-            this->ourUpdate();
-            std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        }
-    }).detach();
+
 
 }
 
 
 void SceneWithCameras::ourUpdate(){
-    std::cout<< "update"<<std::endl;
-
+    std::vector<Eigen::Vector3f> first_trans;
+    std::vector<Eigen::Vector2f> first_rots;
     for(int i=0;i<cyls.size();i++){
         if(cyls[i].isRotationEmpty()){
-            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-            cyls[i].getCyl()->TranslateInSystem(system, Eigen::Vector3f(-0.1f*speedFactor,0,0));
+            first_trans[i]= Eigen::Vector3f(0,0,0);
+            first_rots[i]= Eigen::Vector2f(0,0);
         }
         else{
-            cyls[i].getCyl()->Translate(cyls[i].getTranslation());
-            if(cyls[i].getRotation()[0]==3.0){
-                cyls[i].getCyl()->RotateByDegree(cyls[i].getRotation()[1],Axis::Z);
+            first_trans[i]= cyls[i].getTranslation();
+            first_rots[i]= cyls[i].getRotation();
+        }
+    }
+    for(int i=0;i<first_trans.size();i++){
+        if(first_trans[i]==Eigen::Vector3f(0,0,0)){
+            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+            cyls[i].getCyl()->TranslateInSystem(system, Eigen::Vector3f(-0.05f*speedFactor,0,0));
+        }
+        else{
+            Eigen::Vector3f cur_trans = first_trans[i];
+            Eigen::Vector2f cur_rot = first_rots[i];
+            cyls[i].getCyl()->Translate(cur_trans);
+            if(i<cyls.size()-1){
+                cyls[i+1].setTranslation(cur_trans);
+            }
+            if(cur_rot[0]==3.0){
+                cyls[i].getCyl()->RotateByDegree(cur_rot[1],Axis::Z);
+                if(i<cyls.size()-1){
+                    cyls[i+1].setRotation(cur_rot);
+                }
             }
             else{
-                cyls[i].getCyl()->RotateByDegree(cyls[i].getRotation()[1],Axis::Y);
+                cyls[i].getCyl()->RotateByDegree(cur_rot[1],Axis::Y);
+                if(i<cyls.size()-1){
+                    cyls[i+1].setRotation(cur_rot);
+                }
             }
         }
 
@@ -858,20 +882,19 @@ void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
     }
     if(isAxisZ){ ////down
         for(int i=1;i<=50;i++){
-
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-0.8,-0.8,0);
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-3,-3,0);
             float time = i/50;
            cyls[0].setTranslation(getPosition(time,p1,p2));
-           cyls[0].setRotation(Eigen::Vector2f (3.0,0.2*i/50*dir));
+           cyls[0].setRotation(Eigen::Vector2f (3.0,5*i/50*dir));
         }
     } else{////right
         for(int i=1;i<=50;i++){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-0.8,0,-0.8);
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-3,0,-3);
             float time = i/50;
             cyls[0].setTranslation(getPosition(time,p1,p2));
-            cyls[0].setRotation(Eigen::Vector2f (2.0,0.2*i/50*dir));
+            cyls[0].setRotation(Eigen::Vector2f (2.0,5*i/50*dir));
         }
     }
 }

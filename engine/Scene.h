@@ -61,7 +61,7 @@ protected:
     int xAtPress = -1, yAtPress = -1;
     float pickedModelDepth = 0;
     Eigen::Affine3f pickedToutAtPress, cameraToutAtPress;
-    bool animate=false;
+    bool animate= false;
     Display mydisplay;
 };
 

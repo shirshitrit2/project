@@ -31,7 +31,7 @@ private:
 //    std::vector<igl::AABB<Eigen::MatrixXd,3>> blueTree;
     std::vector<Fruit> fruits;
     igl::AABB<Eigen::MatrixXd,3> snakeTree;
-    float scaleFactor = 0.5;
+    float scaleFactor = 1;
     int scoreCounter=0;
     double scale=0.5;
     std::shared_ptr<cg3d::Model> currSphere;
