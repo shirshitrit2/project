@@ -714,6 +714,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 void SceneWithCameras::ourUpdate(){
     std::cout<< "update"<<std::endl;
+
     for(int i=0;i<cyls.size();i++){
         if(cyls[i].isRotationEmpty()){
             Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
