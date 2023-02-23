@@ -37,7 +37,7 @@ private:
     std::shared_ptr<cg3d::Model> currSphere;
     bool win=false;
     bool lose=false;
-    int limits=60;
+    int limits=240;
     int speedTimer=0;
     int level=0;
 
@@ -53,7 +53,7 @@ public:
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     bool isSnakeCollide(int i);
     void loadTurn(bool direction, bool isAxisZ);
-    Eigen::Vector3f getPosition(float time, Eigen::Vector3f p1, Eigen::Vector3f p2);
+    Eigen::Vector3f getPosition(float time, Eigen::Vector3f p0, Eigen::Vector3f p1,Eigen::Vector3f p2);
 private:
     //inline bool IsActive() const { return animate; };
     //inline void SetActive(bool _isActive = true) { animate = _isActive; }

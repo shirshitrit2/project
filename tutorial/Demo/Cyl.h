@@ -24,9 +24,10 @@ public:
 
         private:
             std::shared_ptr<cg3d::Model> cyl;
-            std::queue<Eigen::Vector3f> Translations;
-            std::queue<Eigen::Vector2f> Rotations;
+
         public:
+    std::queue<Eigen::Vector3f> Translations;
+    std::queue<Eigen::Vector2f> Rotations;
 
 
 

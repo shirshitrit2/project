@@ -119,60 +119,6 @@ void SceneWithCameras::BuildImGui()
     }
 
 
-//    ImGui::SameLine();
-//    if (ImGui::Button("Center"))
-//        camera->SetTout(Eigen::Affine3f::Identity());
-//    if (pickedModel) {
-//        ImGui::Text("Picked model: %s", pickedModel->name.c_str());
-//        ImGui::SameLine();
-//        if (ImGui::Button("Drop"))
-//            pickedModel = nullptr;
-//        if (pickedModel) {
-//            if (ImGui::CollapsingHeader("Draw options", ImGuiTreeNodeFlags_DefaultOpen)) {
-//                ImGui::Checkbox("Show wireframe", &pickedModel->showWireframe);
-//                if (pickedModel->showWireframe) {
-//                    ImGui::Text("Wireframe color:");
-//                    ImGui::SameLine();
-//                    ImGui::ColorEdit4("Wireframe color", pickedModel->wireframeColor.data(), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-//                }
-//                ImGui::Checkbox("Show faces", &pickedModel->showFaces);
-//                ImGui::Checkbox("Show textures", &pickedModel->showTextures);
-//                if (ImGui::Button("Scale down"))
-//                    pickedModel->Scale(0.9f);
-//                ImGui::SameLine();
-//                if (ImGui::Button("Scale up"))
-//                    pickedModel->Scale(1.1f);
-//            }
-//            if (ImGui::Button("Dump model mesh data")) {
-//                std::cout << "model name: " << pickedModel->name << std::endl;
-//                if (pickedModel->meshIndex > 0)
-//                    std::cout << "mesh index in use: " << pickedModel->meshIndex;
-//                for (auto& mesh: pickedModel->GetMeshList()) {
-//                    Eigen::IOFormat simple(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", "");
-//                    std::cout << "mesh name: " << mesh->name << std::endl;
-//                    for (int i = 0; i < mesh->data.size(); i++) {
-//                        if (mesh->data.size() > 1)
-//                            std::cout << "mesh #" << i + 1 << ":" << std::endl;
-//                        DumpMeshData(simple, mesh->data[i]);
-//                    }
-//                }
-//            }
-//            if (ImGui::Button("Dump model transformations")) {
-//                Eigen::IOFormat format(2, 0, ", ", "\n", "[", "]");
-//                const Eigen::Matrix4f& transform = pickedModel->GetAggregatedTransform();
-//                std::cout << "Tin:" << std::endl << pickedModel->Tin.matrix().format(format) << std::endl
-//                          << "Tout:" << std::endl << pickedModel->Tout.matrix().format(format) << std::endl
-//                          << "Transform:" << std::endl << transform.matrix().format(format) << std::endl
-//                          << "--- Transform Breakdown ---" << std::endl
-//                          << "Rotation:" << std::endl << Movable::GetTranslation(transform).matrix().format(format) << std::endl
-//                          << "Translation:" << std::endl << Movable::GetRotation(transform).matrix().format(format) << std::endl
-//                          << "Rotation x Translation:" << std::endl << Movable::GetTranslationRotation(transform).matrix().format(format)
-//                          << std::endl << "Scaling:" << std::endl << Movable::GetScaling(transform).matrix().format(format) << std::endl;
-//            }
-//        }
-//    }
-
-//    ImGui::End();
 }
 
 void SceneWithCameras::DumpMeshData(const Eigen::IOFormat& simple, const MeshData& data)
@@ -196,16 +142,7 @@ void SceneWithCameras::SetCamera(int index)
     camera = camList[index];
     viewport->camera = camera;
 }
-//Eigen::Vector3f SceneWithCameras::findVelocity(float factor){
-//
-//    float Vx1 = (rand() % range + offset);
-//    float Vz1 = (rand() % range + offset);
-//    Eigen::Vector3f Velocity = Eigen::Vector3f(Vx1,0,Vz1);
-//    Velocity.normalize();
-//    Velocity=Eigen::Vector3f(Velocity.x()*factor,0,Velocity.z()*factor);
-//    return Velocity;
-//}
-//
+
 bool SceneWithCameras::findSmallestBox(igl::AABB<Eigen::MatrixXd,3> tree1,igl::AABB<Eigen::MatrixXd,3> tree2,Fruit f){
 
     if(isCollide(f)) {
@@ -228,11 +165,6 @@ bool SceneWithCameras::findSmallestBox(igl::AABB<Eigen::MatrixXd,3> tree1,igl::A
     return false;
 }
 
-//bool SceneWithCameras::findSmallestBox(Fruit f){
-//    igl::AABB<Eigen::MatrixXd,3> tree1 = f.getTree();
-//    igl::AABB<Eigen::MatrixXd,3> tree2 = snakeTree;
-//    findSmallestBox(tree1,tree2,f);
-//}
 
 bool SceneWithCameras::isCollide(Fruit f){
 
@@ -548,22 +480,13 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     camList[0] = Camera::Create("camera0", fov, float(width) / float(height), near, far);
     camList[1] = Camera::Create(" ", fov, float(width) / float(height), near, far);
     root->AddChild(camList[1] );
-//    for (int i = 1; i < camList.size(); i++) {
-//        auto camera = Camera::Create("", fov, double(width) / height, near, far);
-//        auto model = ObjLoader::ModelFromObj(std::string("camera") + std::to_string(i), "data/camera.obj", carbon);
-//        root->AddChild(camList[i] = CamModel::Create(*camera, *model));
-//    }
 
     camList[0]->RotateByDegree(-90, Axis::X);
-    camList[0]->Translate(20, Axis::Y);
+    camList[0]->Translate(limits/2-20, Axis::Y);
     camList[0]->Translate(5, Axis::X);
 
     camList[1]->Translate(-3, Axis::X);
     camList[1]->RotateByDegree(-180, Axis::Y);
-//    camList[2]->Translate(-8, Axis::Z);
-//    camList[2]->RotateByDegree(180, Axis::Y);
-//    camList[3]->Translate(3, Axis::X);
-//    camList[3]->RotateByDegree(90, Axis::Y);
     camera = camList[0];
 
     //// Textures :
@@ -579,26 +502,6 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     auto background{Model::Create("background", Mesh::Cube(), daylight)};
     AddChild(background);
 
-
-//    auto snake = Camera::Create("", fov, double(width) / height, near, far);
-//    auto model = ObjLoader::ModelFromObj(std::string("snake") , "data/snake3.obj", carbon);
-//    root->AddChild( CamModel::Create(*snake, *model));
-//
-//    auto snakeMesh{ObjLoader::MeshFromObjFiles<std::string>("snakeMesh", "data/snake1.obj", "data/snake2.obj")};
-//    auto blank{std::make_shared<Material>("blank", program)};
-//    auto snake{Model::Create("snake", snakeMesh, blank)};
-
-//    auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
-//        static float prevDistance = -1;
-//        float distance = (visitor->view * visitor->norm * model->GetAggregatedTransform()).norm();
-//        if (prevDistance != distance)
-//            debug(model->name, " distance from camera: ", prevDistance = distance);
-//        return distance > 3 ? 1 : 0;
-//    };
-//    auto autoSnake = AutoMorphingModel::Create(*snake, morphFunc);
-//    autoSnake->showWireframe = true;
-//    root->AddChild(autoSnake);
-//    float scaleFactor = 0.5;
 
     //// Snake:
     Cyl cur(Model::Create("first", Mesh::Cylinder(), grass));
@@ -639,7 +542,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(255.0f,0.0f, 0.0f, 0.9f)), "red");
         fruits.push_back(f);
     }
@@ -679,31 +582,9 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         scale=0.5;
     }
 
-
-
-//    yellowVelocities.push_back(findVelocity(yellowVelocity));
-//    blueVelocities.push_back(findVelocity(blueVelocity));
-//    yellowSpheres[0]->showWireframe = true;
-//    blueSpheres[0]->showWireframe = true;
-
     for(int i=0;i<fruits.size();i++){
         root->AddChild(fruits[i].getModel());
     }
-
-
-
-//    currSphere= Model::Create("sphere1", sphereMesh, grass);
-//    currSphere->Translate(Eigen::Vector3f(4,0,0));
-//    currSphere->Scale(1.5f,Axis::X);
-
-//    sphere1->isPickable = false;
-//    sphere2->isPickable = false;
-//    cylinder->Translate({0, -3, -5});
-//    cylinder->showWireframe = true;
-
-
-//    initTrees();
-//    initTrees(blueTree, blueSpheres);
 
 
     background->Scale(limits, Axis::XYZ);
@@ -716,42 +597,71 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
 void SceneWithCameras::ourUpdate(){
-    std::vector<Eigen::Vector3f> first_trans;
-    std::vector<Eigen::Vector2f> first_rots;
-    for(int i=0;i<cyls.size();i++){
-        if(cyls[i].isRotationEmpty()){
-            first_trans[i]= Eigen::Vector3f(0,0,0);
-            first_rots[i]= Eigen::Vector2f(0,0);
-        }
-        else{
-            first_trans[i]= cyls[i].getTranslation();
-            first_rots[i]= cyls[i].getRotation();
-        }
+//    std::vector<Eigen::Vector3f> first_trans;
+//    std::vector<Eigen::Vector2f> first_rots;
+//    for(int i=0;i<cyls.size();i++){
+//        if(cyls[i].isRotationEmpty()){
+//            first_trans.push_back(Eigen::Vector3f(0,0,0));
+//            first_rots.push_back(Eigen::Vector2f(0,0));
+//        }
+//        else{
+//            first_trans.push_back(cyls[i].getTranslation()) ;
+//            first_rots.push_back(cyls[i].getRotation());
+//        }
+//    }
+//    for(int i=0;i<cyls.size();i++){
+//        if(first_trans[i]==Eigen::Vector3f(0,0,0)){
+//            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+//            cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-0.1f*speedFactor,0,0));
+//        }
+//
+//        else{
+//            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+//            Eigen::Vector3f cur_trans = first_trans[i];
+//            Eigen::Vector2f cur_rot = first_rots[i];
+//            cyls[i].getCyl()->Translate(system*cur_trans);
+//            if(i<cyls.size()-1){
+//                cyls[i+1].setTranslation(cur_trans);
+//            }
+//            if(cur_rot[0]==3.0){
+//                cyls[i].getCyl()->RotateInSystem(system,cur_rot[1],Axis::Z);
+//                if(i<cyls.size()-1){
+//                    cyls[i+1].setRotation(cur_rot);
+//                }
+//            }
+//            else{
+//                cyls[i].getCyl()->RotateInSystem(system,cur_rot[1],Axis::Y);
+//                if(i<cyls.size()-1){
+//                    cyls[i+1].setRotation(cur_rot);
+//                }
+//            }
+//        }
+//
+//    }
+    for(int i = (cyls.size()-1);i>0;i--){
+        Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+        cyls[i].getCyl()->SetTransform(trans);
     }
-    for(int i=0;i<first_trans.size();i++){
-        if(first_trans[i]==Eigen::Vector3f(0,0,0)){
-            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-            cyls[i].getCyl()->TranslateInSystem(system, Eigen::Vector3f(-0.05f*speedFactor,0,0));
+    if(cyls[0].isTranslationEmpty()){
+
+
+            Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+            cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+
+
+    } else{
+//        for(int i = (cyls.size()-1);i>0;i--){
+//            Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+//            cyls[i].getCyl()->SetTransform(trans);
+//        }
+        Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+        cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());
+        Eigen::Vector2f next_rot=cyls[0].getRotation();
+        if(next_rot[0]==3.0){
+            cyls[0].getCyl()->RotateInSystem(system,next_rot[1],Axis::Z);
         }
         else{
-            Eigen::Vector3f cur_trans = first_trans[i];
-            Eigen::Vector2f cur_rot = first_rots[i];
-            cyls[i].getCyl()->Translate(cur_trans);
-            if(i<cyls.size()-1){
-                cyls[i+1].setTranslation(cur_trans);
-            }
-            if(cur_rot[0]==3.0){
-                cyls[i].getCyl()->RotateByDegree(cur_rot[1],Axis::Z);
-                if(i<cyls.size()-1){
-                    cyls[i+1].setRotation(cur_rot);
-                }
-            }
-            else{
-                cyls[i].getCyl()->RotateByDegree(cur_rot[1],Axis::Y);
-                if(i<cyls.size()-1){
-                    cyls[i+1].setRotation(cur_rot);
-                }
-            }
+            cyls[0].getCyl()->RotateInSystem(system,next_rot[1],Axis::Y);
         }
 
     }
@@ -875,37 +785,51 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
     SceneWithImGui::KeyCallback(nullptr, x, y, key, scancode, action, mods);
 }
 
+
+
 void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
-    int dir=-1;
+    float dir=-1.0;
     if(direction){
-        dir=1;
+        dir=1.0;
     }
     if(isAxisZ){ ////down
-        for(int i=1;i<=50;i++){
+        for(float i=1.0f;i<=40.0f;i=i+1.0f){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-3,-3,0);
-            float time = i/50;
-           cyls[0].setTranslation(getPosition(time,p1,p2));
-           cyls[0].setRotation(Eigen::Vector2f (3.0,5*i/50*dir));
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9,0,0);
+            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9,dir*0.2,0);
+
+            float time = i/40.0F;
+           cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
+           cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*1.0f/40.0f*dir));
         }
     } else{////right
-        for(int i=1;i<=50;i++){
+        for(float i=1.0f;i<=40.0f;i=i+1.0f){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-3,0,-3);
-            float time = i/50;
-            cyls[0].setTranslation(getPosition(time,p1,p2));
-            cyls[0].setRotation(Eigen::Vector2f (2.0,5*i/50*dir));
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9,0,0);
+            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9,0,dir*0.2);
+            float time = i/40.0F;
+            Eigen::Vector3f trans =getPosition(time,p1,p2,p3)-p1;
+
+            cyls[0].setTranslation(trans);
+            cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*1.0f/40.0f*dir));
         }
+
+    }
+    std::queue<Eigen::Vector3f> copy=cyls[0].Translations;
+
+    while(!copy.empty()){
+        std::cout << copy.front() << " "<< std::endl;
+        copy.pop();
     }
 }
 
 
-Eigen::Vector3f SceneWithCameras::getPosition(float time, Eigen::Vector3f p1, Eigen::Vector3f p2) {
+Eigen::Vector3f SceneWithCameras::getPosition(float time, Eigen::Vector3f p0, Eigen::Vector3f p1,Eigen::Vector3f p2) {
     if(time < 0 || time > 1)
         throw std::invalid_argument("Time out of bounds for curve");
-    Eigen::Vector3f pos = Eigen::Vector3f(0,0,0);
-    pos += pow((1-time), 2) * pow(time, 0) * p1;
-    pos+=2 * pow((1-time), 1) * pow(time, 1) * p2;
+    Eigen::Vector3f pos = p1 + ( pow((1-time),2)*(p0-p1) ) + ( pow(time,2)*(p2-p1) );
+//    pos += pow((1-time), 2)  * p1;
+//    pos+=2 * pow((1-time), 1) * pow(time, 1) * p2;
     return pos;
 }
 
