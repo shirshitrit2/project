@@ -51,7 +51,7 @@ public:
     virtual bool IsActive() const  ;
 
     virtual void SetActive(bool animate);
-    float speedFactor=1; //For speeding snake's speed
+    float speedFactor=0.5; //For speeding snake's speed
 
 
     void setDisplay(const Display &display);

@@ -40,10 +40,10 @@ private:
     int limits=150;
     int speedTimer=0;
     int level=0;
-    float fac=1;
+    float fac=0.5;
     bool turn =false;
-    int counter=18;
-    int index= 18;
+    int end_counter=18;
+    int start_counter= 18;
 
 
 

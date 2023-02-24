@@ -597,67 +597,43 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
 void SceneWithCameras::ourUpdate(){
-//    std::vector<Eigen::Vector3f> first_trans;
-//    std::vector<Eigen::Vector2f> first_rots;
-//    for(int i=0;i<cyls.size();i++){
-//        if(cyls[i].isRotationEmpty()){
-//            first_trans.push_back(Eigen::Vector3f(0,0,0));
-//            first_rots.push_back(Eigen::Vector2f(0,0));
-//        }
-//        else{
-//            first_trans.push_back(cyls[i].getTranslation()) ;
-//            first_rots.push_back(cyls[i].getRotation());
-//        }
-//    }
-//    for(int i=0;i<cyls.size();i++){
-//        if(first_trans[i]==Eigen::Vector3f(0,0,0)){
-//            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-//            cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-0.1f*speedFactor,0,0));
-//        }
-//
-//        else{
-//            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-//            Eigen::Vector3f cur_trans = first_trans[i];
-//            Eigen::Vector2f cur_rot = first_rots[i];
-//            cyls[i].getCyl()->Translate(system*cur_trans);
-//            if(i<cyls.size()-1){
-//                cyls[i+1].setTranslation(cur_trans);
-//            }
-//            if(cur_rot[0]==3.0){
-//                cyls[i].getCyl()->RotateInSystem(system,cur_rot[1],Axis::Z);
-//                if(i<cyls.size()-1){
-//                    cyls[i+1].setRotation(cur_rot);
-//                }
-//            }
-//            else{
-//                cyls[i].getCyl()->RotateInSystem(system,cur_rot[1],Axis::Y);
-//                if(i<cyls.size()-1){
-//                    cyls[i+1].setRotation(cur_rot);
-//                }
-//            }
-//        }
-//
-    //    }
-    if(counter==15){
+
+    if(end_counter==15){
         turn= false;
     }
-    if(turn){
+    if(start_counter==15){
+        turn=true;
+    }
+    ////move cyls[1]-cyls[n]
+    if(turn){////evryone is turning
         for(int i = (cyls.size()-1);i>0;i--){
             Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
             cyls[i].getCyl()->SetTransform(trans);
-    }
-    }else{
-        for(int i = (cyls.size()-1);i>0;i--){
-            Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-            cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor*fac,0,0));
         }
+    }else{
+        if(start_counter>15){////evryone goinig strait
+            for(int i = (cyls.size()-1);i>0;i--){
+                Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+            }
+        }else{////some are turning and some are going strait
+            for(int i = start_counter+1;i<cyls.size();i++){ /////tail- going straight
+                Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+            }
+            for(int i = start_counter;i>0;i--){//// first i cyls - going round
+                Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+                cyls[i].getCyl()->SetTransform(trans);
+            }
+        }
+
     }
 
-    counter++;
-
+    end_counter++;
+////move cyls[0]
     if(cyls[0].isTranslationEmpty()){
             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-            cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor*fac,0,0));
+            cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
 
     } else{
 //        for(int i = (cyls.size()-1);i>0;i--){
@@ -667,7 +643,7 @@ void SceneWithCameras::ourUpdate(){
         Eigen::Vector3f trans = cyls[0].getTranslation();
         Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
         if(trans == Eigen::Vector3f(5,5,5)){
-            turn=true;
+            start_counter=1;
             cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());
             Eigen::Vector2f next_rot=cyls[0].getRotation();
             if(next_rot[0]==3.0){
@@ -678,7 +654,7 @@ void SceneWithCameras::ourUpdate(){
             }
 
         }else if(trans ==Eigen::Vector3f(7,7,7)){
-            counter=0;
+            end_counter=0;
 
         }else{
             cyls[0].getCyl()->Translate(system*trans);
@@ -791,12 +767,12 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
         }
         if(key == GLFW_KEY_UP){
             if(!turn){
-                loadTurn(false,true);}
+                loadTurn(true,true);}
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
         if(key == GLFW_KEY_DOWN){
             if(!turn){
-             loadTurn(true,true);}
+             loadTurn(false,true);}
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
         if(key == GLFW_KEY_RIGHT){
@@ -824,57 +800,54 @@ void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
     if(direction){
         dir=1.0;
     }
+    float timeIntervals=40.0;
+    float time = 1.0f/(timeIntervals*fac);
+
     if(isAxisZ){ ////down
-        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
-        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,dir*0.2*fac,0);
-        float time = 1.0f/40.0f;
-        cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
-        cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*1.0f/40.0f*dir));
+//        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
+//        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
+//        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
+//        cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
+//        cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
         cyls[0].setTranslation(Eigen::Vector3f(5,5,5));
 
-        for(float i=2.0f;i<=40.0f;i=i+1.0f){
+        for(float i=1.0f;i<=(timeIntervals*fac);i=i+1.0f){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
-            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,dir*0.2*fac,0);
-
-            float time = i/40.0F;
-           cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
-           cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*1.0f/40.0f*dir));
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
+            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
+            float cur_time = i/(timeIntervals*fac);
+           cyls[0].setTranslation(getPosition(cur_time,p1,p2,p3)-p1);
+           cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
         }
         cyls[0].setTranslation(Eigen::Vector3f(7,7,7));
 
     } else{////right
-
-        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
-        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,0,dir*0.2*fac);
-        float time1 = 1.0f/40.0f;
-        Eigen::Vector3f trans1 =getPosition(time1,p1,p2,p3)-p1;
-        cyls[0].setTranslation(trans1);
-        cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*1.0f/40.0f*dir));
+//
+//        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
+//        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
+//        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,0,dir*0.2*fac);
+//        Eigen::Vector3f trans1 =getPosition(time,p1,p2,p3)-p1;
+//        cyls[0].setTranslation(trans1);
+//        cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*time*dir));
         cyls[0].setTranslation(Eigen::Vector3f(5,5,5));
 
-        for(float i=1.0f;i<=40.0f;i=i+1.0f){
+        for(float i=1.0f;i<=(timeIntervals*fac);i=i+1.0f){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
-            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,0,dir*0.2*fac);
-            float time = i/40.0F;
-            Eigen::Vector3f trans =getPosition(time,p1,p2,p3)-p1;
-
+            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
+            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,0,dir*0.2*fac);
+            float cur_time = i/(timeIntervals*fac);
+            Eigen::Vector3f trans =getPosition(cur_time,p1,p2,p3)-p1;
             cyls[0].setTranslation(trans);
-            cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*1.0f/40.0f*dir));
+            cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*time*dir));
         }
         cyls[0].setTranslation(Eigen::Vector3f(7,7,7));
-
-
     }
-    std::queue<Eigen::Vector3f> copy=cyls[0].Translations;
-
-    while(!copy.empty()){
-        std::cout << copy.front() << " "<< std::endl;
-        copy.pop();
-    }
+//    std::queue<Eigen::Vector3f> copy=cyls[0].Translations;
+//
+//    while(!copy.empty()){
+//        std::cout << copy.front() << " "<< std::endl;
+//        copy.pop();
+//    }
 }
 
 
