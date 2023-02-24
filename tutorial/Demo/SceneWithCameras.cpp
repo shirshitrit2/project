@@ -486,7 +486,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     camList[0]->Translate(5, Axis::X);
 
     camList[1]->Translate(-3, Axis::X);
-    camList[1]->RotateByDegree(-180, Axis::Y);
+    camList[1]->RotateByDegree(90, Axis::Y);
     camera = camList[0];
 
     //// Textures :
@@ -630,6 +630,7 @@ void SceneWithCameras::ourUpdate(){
     }
 
     end_counter++;
+    start_counter++;
 ////move cyls[0]
     if(cyls[0].isTranslationEmpty()){
             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
