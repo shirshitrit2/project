@@ -37,7 +37,7 @@ private:
     std::shared_ptr<cg3d::Model> currSphere;
     bool win=false;
     bool lose=false;
-    int limits=150;
+    int limits=200;
     int speedTimer=0;
     int level=0;
     float fac=0.5;

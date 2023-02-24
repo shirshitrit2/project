@@ -482,7 +482,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     root->AddChild(camList[1] );
 
     camList[0]->RotateByDegree(-90, Axis::X);
-    camList[0]->Translate(limits/2-5, Axis::Y);
+    camList[0]->Translate(90, Axis::Y);
     camList[0]->Translate(5, Axis::X);
 
     camList[1]->Translate(-3, Axis::X);
@@ -494,9 +494,9 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     auto grass{std::make_shared<Material>("grass", program)};
     auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")};
 
-    bricks->AddTexture(0, "textures/bricks.jpg", 2);
-    grass->AddTexture(0, "textures/grass.bmp", 2);
-    daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
+    bricks->AddTexture(0, "textures/box0.bmp", 2);
+    grass->AddTexture(0, "textures/box0.bmp", 2);
+    daylight->AddTexture(0, "textures/cubemaps/Box_", 3);
 
     //// Background:
     auto background{Model::Create("background", Mesh::Cube(), daylight)};
@@ -532,28 +532,33 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    cylinder->AddChildren({sphere1, sphere2});
 
     //// Blue fruits- magnets
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 255.0f, 0.9f)), "blue");
+    for(int i=0; i<3; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 6.0f, 0.9f)), "blue");
+        f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Yellow fruits- score
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(255.0f,255.0f, 105.0f, 0.9f)), "yellow");
+    for(int i=0; i<15; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(1.0f,1.0f, 0.0f, 0.9f)), "yellow");
+        f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(255.0f,0.0f, 0.0f, 0.9f)), "red");
+    for(int i=0; i<1; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(1.0f,0.0f, 0.0f, 0.9f)), "red");
+        f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
     for(int i=0; i<level; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
+        f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Green fruits- speed
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,255.0f, 0.0f, 0.9f)), "green");
+    for(int i=0; i<3; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 0.0f, 0.9f)), "green");
+        f.getModel()->Scale(8);
         fruits.push_back(f);
     }
 
@@ -637,15 +642,11 @@ void SceneWithCameras::ourUpdate(){
             cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
 
     } else{
-//        for(int i = (cyls.size()-1);i>0;i--){
-//            Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
-//            cyls[i].getCyl()->SetTransform(trans);
-//        }
         Eigen::Vector3f trans = cyls[0].getTranslation();
         Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-        if(trans == Eigen::Vector3f(5,5,5)){
-            start_counter=1;
-            cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());
+        if(trans == Eigen::Vector3f(5,5,5)){////check if its first iteration of a turn
+            start_counter=1;////starts counter for turning cyls
+            cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());////geting the real first translation and rotation
             Eigen::Vector2f next_rot=cyls[0].getRotation();
             if(next_rot[0]==3.0){
                 cyls[0].getCyl()->RotateInSystem(system,next_rot[1],Axis::Z);
@@ -654,11 +655,11 @@ void SceneWithCameras::ourUpdate(){
                 cyls[0].getCyl()->RotateInSystem(system,next_rot[1],Axis::Y);
             }
 
-        }else if(trans ==Eigen::Vector3f(7,7,7)){
-            end_counter=0;
+        }else if(trans ==Eigen::Vector3f(7,7,7)){////check if its thr end of a turn for cyls[0]
+            end_counter=0;////starts counter for stoping cyls
 
         }else{
-            cyls[0].getCyl()->Translate(system*trans);
+            cyls[0].getCyl()->Translate(system*trans);////if its not the end and not the start move acording to the trans and rot
             Eigen::Vector2f next_rot=cyls[0].getRotation();
             if(next_rot[0]==3.0){
                 cyls[0].getCyl()->RotateInSystem(system,next_rot[1],Axis::Z);
@@ -683,10 +684,27 @@ void SceneWithCameras::ourUpdate(){
         if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
             fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
         }
-        curModel->Translate(fruits[i].getVelocity());
+        curModel->Translate(fruits[i].getVelocity());////moving the fruits
     }
 
+
+    ////check colision with balls
     collidingSnakeWithBall();
+
+
+    ////check if the snack is going out of limit
+    if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
+        SetActive(!IsActive());
+        lose= true;
+    }
+    if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
+        SetActive(!IsActive());
+        lose=true;
+    }
+    if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
+        SetActive(!IsActive());
+        lose=true;
+    }
 
 
     //// Handle speed boost timer
@@ -710,38 +728,7 @@ void SceneWithCameras::ourUpdate(){
 void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
 {
     Scene::Update(p, proj, view, model);
-//    if (animate) {
-//        //// Check that balls doesn't move outside the box
-//        for (int i = 0; i < fruits.size(); i++) {
-//            std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
-//            Eigen::Vector3f curVeloc = fruits[i].getVelocity();
-//            if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
-//                fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), 0, curVeloc.z()));
-//            }
-//            if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
-//                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), 0, -curVeloc.z()));
-//            }
-//            curModel->Translate(fruits[i].getVelocity());
-//        }
-//        collidingSnakeWithBall();
-//    }
-//
-//    //// Handle speed boost timer
-//    if(speedTimer>0){
-//        speedTimer--;
-//        if(speedTimer==0) {
-//            speedFactor = speedFactor / 10;
-//            std::cout<<"speed down"<<std::endl;
-//
-//        }
-//    }
-//
-//    //// Check self collision of the snake
-//    for(int i=1;i<cyls.size();i++){
-//        if(isSnakeCollide(i)){
-////            lose=true;
-//        }
-//    }
+
 }
 
 void SceneWithCameras::LoadObjectFromFileDialog()
@@ -768,12 +755,12 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
         }
         if(key == GLFW_KEY_UP){
             if(!turn){
-                loadTurn(true,true);}
+                loadTurn(false,true);}
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
         if(key == GLFW_KEY_DOWN){
             if(!turn){
-             loadTurn(false,true);}
+             loadTurn(true,true);}
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
         if(key == GLFW_KEY_RIGHT){
@@ -824,18 +811,12 @@ void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
 
     } else{////right
 //
-//        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-//        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-1.9*fac,0,0);
-//        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-1.9*fac,0,dir*0.2*fac);
-//        Eigen::Vector3f trans1 =getPosition(time,p1,p2,p3)-p1;
-//        cyls[0].setTranslation(trans1);
-//        cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*time*dir));
         cyls[0].setTranslation(Eigen::Vector3f(5,5,5));
 
         for(float i=1.0f;i<=(timeIntervals*fac);i=i+1.0f){
             Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
             Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
-            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,0,dir*0.2*fac);
+            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,0,dir*0.1*fac);
             float cur_time = i/(timeIntervals*fac);
             Eigen::Vector3f trans =getPosition(cur_time,p1,p2,p3)-p1;
             cyls[0].setTranslation(trans);

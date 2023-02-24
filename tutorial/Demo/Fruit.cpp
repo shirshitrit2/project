@@ -7,20 +7,20 @@
 
 #include "Model.h"
 Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color) : model(model), color(color) {
-    if(color=="blue"){
-        this->velocity = findVelocity(0.1);
+    if(color=="blue"){////magnet
+        this->velocity = findVelocity(0.5);
     }
-    if(color=="yellow"){
-        this->velocity = findVelocity(0.1);
+    if(color=="yellow"){////score
+        this->velocity = findVelocity(0.2);
     }
-    if(color=="red"){
-        this->velocity = findVelocity(0.1);
+    if(color=="red"){////win
+        this->velocity = findVelocity(1);
     }
-    if(color=="black"){
+    if(color=="black"){////bomb
         this->velocity= findVelocity(0.1);
     }
-    if(color=="green"){
-        this->velocity= findVelocity(0.1);
+    if(color=="green"){////speed
+        this->velocity= findVelocity(0.5);
     }
     initTree();
 
@@ -42,10 +42,11 @@ void Fruit::initTree(){
 Eigen::Vector3f Fruit::findVelocity(float factor){
 
     float Vx1 = (rand() % range + offset);
+    float Vy1 = (rand() % range + offset);
     float Vz1 = (rand() % range + offset);
-    Eigen::Vector3f Velocity = Eigen::Vector3f(Vx1,0,Vz1);
+    Eigen::Vector3f Velocity = Eigen::Vector3f(Vx1,Vy1,Vz1);
     Velocity.normalize();
-    Velocity=Eigen::Vector3f(Velocity.x()*factor,0,Velocity.z()*factor);
+    Velocity=Eigen::Vector3f(Velocity.x()*factor,Velocity.y()*factor,Velocity.z()*factor);
     return Velocity;
 }
 
