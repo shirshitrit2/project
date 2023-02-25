@@ -7,7 +7,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}) # set the binary directo
 file(GLOB ${PROJECT_NAME}_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h*)
 add_executable(${PROJECT_NAME}_bin ${${PROJECT_NAME}_SOURCES} Fruit.cpp Fruit.h Animation.cpp Animation.h Cyl.cpp Cyl.h)
 find_package(OpenAL REQUIRED)
-target_link_libraries(${PROJECT_NAME}_bin engine igl::core igl::opengl igl::opengl_glfw igl::opengl_glfw_imgui igl::png ${OPENAL_LIBRARY} )
+find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
+
+target_link_libraries(${PROJECT_NAME}_bin engine igl::core igl::opengl igl::opengl_glfw igl::opengl_glfw_imgui igl::png sfml-audio ${OPENAL_LIBRARY} )
 target_include_directories(${PROJECT_NAME}_bin PRIVATE ${OPENAL_INCLUDE_DIR})
 
 set_target_properties(${PROJECT_NAME}_bin PROPERTIES CXX_STANDARD 20)

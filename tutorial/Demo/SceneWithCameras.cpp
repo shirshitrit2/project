@@ -20,6 +20,8 @@
 #include <OpenAL/alc.h>
 #include <chrono>
 #include <thread>
+#include <SFML/Audio.hpp>
+
 
 
 using namespace cg3d;
@@ -31,7 +33,7 @@ void SceneWithCameras::BuildImGui()
     int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     bool* pOpen = nullptr;
 
-    if(animate){
+    if(playing){
         ImGui::Begin("Menu", pOpen, flags);
         ImGui::SetWindowPos(ImVec2(280, 0), ImGuiCond_Always);
         ImGui::SetWindowSize(ImVec2(0, 0), ImGuiCond_Always);
@@ -44,6 +46,11 @@ void SceneWithCameras::BuildImGui()
         char const *n_char = t.c_str();
         ImGui::SameLine(0);
         ImGui::Text(n_char);
+
+        if(imunity){
+            ImGui::TextColored(ImVec4(1,0,0,1),"IMUNITY");
+
+        }
 
         if(speedTimer>0){
             ImGui::Text("Turbo timer:");
@@ -94,29 +101,45 @@ void SceneWithCameras::BuildImGui()
 //            SetActive(!IsActive());
 
             if (ImGui::Button("Next level")){
+
                 win=false;
                 level++;
-                for(int i=0; i<level; i++){
-                    auto program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
-                    auto material{ std::make_shared<Material>("material", program)}; // empty material
-                    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
-                    Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
-                    f.getModel()->Scale(8);
-                    fruits.push_back(f);
-                    placeFruits(f);
-                }
+                resetPlay = true;
 //                SetActive(!IsActive());
-//                Init(45.0f,800,800,0.1f,120.0f);
-                cyls[0].getCyl()->Translate(Eigen::Vector3f(0,0,0));
-                for(int i = 1;i < 15; i++)
-                {
-                    cyls[i].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
-                    cyls[i].getCyl()->Rotate(cyls[i-1].getCyl()->GetRotation());
-                    cyls[i].getCyl()->Translate(cyls[i-1].getCyl()->GetTranslation());
-                }
+
+
+//                auto program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
+//
+//                auto material{ std::make_shared<Material>("material", program)}; // empty material
+//                auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
+//                Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
+//                f.getModel()->Scale(8);
+//                fruits.push_back(f);
+//                placeFruits(f);
+//
+//////                Init(45.0f,800,800,0.1f,120.0f);
+//                cyls[0].getCyl()->SetCenter(Eigen::Vector3f(0,0,0));
+//                for(int i = 14;i > 0; i--) {
+////                    cyls[i].getCyl().
+//                    cyls[i].getCyl()->Translate(1.6f * scaleFactor, Axis::X);
+//                    cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
+//                    cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
+//                }
+////               root->RemoveChild(cyls[0].getCyl());
+//
+//                SetActive(!IsActive());
+//                std::thread([&]() {
+//                    while (IsActive()) {
+//                        this->ourUpdate();
+//                        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+//                    }
+//                }).detach();
+
             }
             else if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
+                mainSound.stop();
+
                 //std::terminate();
             }
             ImGui::End();
@@ -128,18 +151,21 @@ void SceneWithCameras::BuildImGui()
             ImGui::Text("Game over! ");
             if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
+                mainSound.stop();
+
                 //std::terminate();
             }
             ImGui::End();
 
         }
-        else{
+        else if(level==1){
             ImGui::Begin("Menu", pOpen, flags);
             ImGui::SetWindowPos(ImVec2(220, 220), ImGuiCond_Always);
             ImGui::SetWindowSize(ImVec2(400, 400), ImGuiCond_Always);
             ImGui::Text("Welcome!");
             if (ImGui::Button("Start")){
                 SetActive(!IsActive());
+                playing=true;
                 std::thread([&]() {
                     while (IsActive()) {
                         this->ourUpdate();
@@ -150,6 +176,7 @@ void SceneWithCameras::BuildImGui()
             }
             else if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
+                mainSound.stop();
                 //std::terminate();
             }
             ImGui::End();
@@ -157,6 +184,42 @@ void SceneWithCameras::BuildImGui()
     }
 
 
+}
+
+void SceneWithCameras::reset(){
+//
+/////MAKE GLOBAL meterial ans sphere mesh
+    auto material{ std::make_shared<Material>("material", program)};
+    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
+    Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
+    f.getModel()->Scale(8);
+    fruits.push_back(f);
+    placeFruits(f);
+    root->AddChild(f.getModel());
+
+////                Init(45.0f,800,800,0.1f,120.0f);
+
+    Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+    while(!cyls[0].isTranslationEmpty()){
+        cyls[0].getTranslation();
+    }
+
+    while(!cyls[0].isRotationEmpty()){
+        cyls[0].getRotation();
+    }
+
+
+    cyls[0].getCyl()->Translate(Eigen::Vector3f(-cyls[0].getCyl()->GetTranslation().x(),-cyls[0].getCyl()->GetTranslation().y(),-cyls[0].getCyl()->GetTranslation().z()));
+
+    for(int i = 14;i > 0; i--) {
+//        cyls[i].getCyl().Tr
+        Eigen::Matrix4f trans=cyls[0].getCyl()->GetTransform();
+        cyls[i].getCyl()->SetTransform(trans);
+        cyls[i].getCyl()->Translate(1.6f * scaleFactor, Axis::X);
+        cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
+        cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
+    }
+    playing=true;
 }
 
 void SceneWithCameras::DumpMeshData(const Eigen::IOFormat& simple, const MeshData& data)
@@ -465,6 +528,8 @@ void SceneWithCameras::collidingSnakeWithBall(){
 //            fruits[i].getModel()->Translate(Eigen::Vector3f(-3,0,-3));
 //            fruits[i].setVelocity(Eigen::Vector3f(0,0,0));
             placeFruits(fruits[i]);
+            bite.play();
+            bite.setVolume(100);
             //// Score balls.
             if(fruits[i].getColor()=="yellow"){
                 scoreCounter=scoreCounter+10;
@@ -479,20 +544,28 @@ void SceneWithCameras::collidingSnakeWithBall(){
             }
             //// Winning ball
             if(fruits[i].getColor()=="red"){
-                SetActive(!IsActive());
+//                SetActive(!IsActive());
+                playing= false;
                 init();
                 win=true;
             }
             //// Bomb ball
             if(fruits[i].getColor()=="black"){
-                SetActive(!IsActive());
-                lose=true;
+                if(!imunity){
+                    playing= false;
+//                    SetActive(!IsActive());
+                    lose=true;
+                } else{
+                    imunity= false;
+                }
+
             }
-            //// Speed ball
+            //// imunity
             if(fruits[i].getColor()=="green"){
-                speedFactor=speedFactor*10;
-                speedTimer=3000;
-                std::cout<<"speed up"<<std::endl;
+//                speedFactor=speedFactor*10;
+//                speedTimer=3000;
+//                std::cout<<"speed up"<<std::endl;
+                imunity=true;
 
             }
 
@@ -507,12 +580,31 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 {
     // create the basic elements of the scene
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    auto program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
+    program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
     carbon = std::make_shared<Material>("carbon", program); // default material
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
     auto material{ std::make_shared<Material>("material", program)}; // empty material
 
     //// Sound:
+//    sf::SoundBuffer buffer;
+
+    mainBuffer.loadFromFile("textures/spongebob.wav");
+    if (!biteBuffer.loadFromFile("textures/bite.wav"))
+    {
+        std::cout << "Error: Failed to load sound file." << std::endl;
+    }
+
+    mainSound.setBuffer(mainBuffer);
+    bite.setBuffer(biteBuffer);
+    mainSound.setLoop(true);
+    mainSound.play();
+    mainSound.setVolume(30);
+
+//
+//    while (sound.getStatus() == sf::Sound::Playing)
+//    {
+//        // Wait until the sound finishes playing
+//    }
 
     //// Cameras:
     camList.resize(camList.capacity());
@@ -573,19 +665,19 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    cylinder->AddChildren({sphere1, sphere2});
 
     //// Blue fruits- magnets
-    for(int i=0; i<3; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.1f, 5.0f, 0.9f)), "blue");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Yellow fruits- score
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.6f,1.0f, 0.0f, 0.9f)), "yellow");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<1; i++){
+    for(int i=0; i<15; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
@@ -597,7 +689,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Green fruits- speed
-    for(int i=0; i<3; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 0.0f, 0.9f)), "green");
         f.getModel()->Scale(8);
         fruits.push_back(f);
@@ -631,139 +723,154 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
 void SceneWithCameras::ourUpdate(){
+     if(resetPlay){
+         resetPlay=false;
+         reset();
+     }else{
+         if(end_counter==15){
+             turn= false;
+             fullTurnAction= false;
+         }
+         if(start_counter==15){
+             turn=true;
+         }
+         ////move cyls[1]-cyls[n]
+         if(turn){////evryone is turning
+             for(int i = (cyls.size()-1);i>0;i--){
+                 Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+                 cyls[i].getCyl()->SetTransform(trans);
+             }
+         }else{
+             if(start_counter>15){////evryone goinig strait
+                 for(int i = (cyls.size()-1);i>0;i--){
+                     Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                     cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+                 }
+             }else{////some are turning and some are going strait
+                 for(int i = start_counter+1;i<cyls.size();i++){ /////tail- going straight
+                     Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                     cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+                 }
+                 for(int i = start_counter;i>0;i--){//// first i cyls - going round
+                     Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+                     cyls[i].getCyl()->SetTransform(trans);
+                 }
+             }
 
-    if(end_counter==15){
-        turn= false;
-        fullTurnAction= false;
-    }
-    if(start_counter==15){
-        turn=true;
-    }
-    ////move cyls[1]-cyls[n]
-    if(turn){////evryone is turning
-        for(int i = (cyls.size()-1);i>0;i--){
-            Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
-            cyls[i].getCyl()->SetTransform(trans);
-        }
-    }else{
-        if(start_counter>15){////evryone goinig strait
-            for(int i = (cyls.size()-1);i>0;i--){
-                Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-                cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
-            }
-        }else{////some are turning and some are going strait
-            for(int i = start_counter+1;i<cyls.size();i++){ /////tail- going straight
-                Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-                cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
-            }
-            for(int i = start_counter;i>0;i--){//// first i cyls - going round
-                Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
-                cyls[i].getCyl()->SetTransform(trans);
-            }
-        }
+         }
 
-    }
-
-    end_counter++;
-    start_counter++;
+         end_counter++;
+         start_counter++;
 ////move cyls[0]
-    if(cyls[0].isTranslationEmpty()){
-            Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-            cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+         if(cyls[0].isTranslationEmpty()){
+             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+             cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
 
-    } else{
-        Eigen::Vector3f trans = cyls[0].getTranslation();
-        Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-        if(trans == Eigen::Vector3f(5,5,5)){////check if its first iteration of a turn
-            start_counter=1;////starts counter for turning cyls
-            fullTurnAction=true;
-            cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());////geting the real first translation and rotation
-            Eigen::Vector2f next_rot=cyls[0].getRotation();
-            if(next_rot[0]==3.0){
-                cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
-            }
-            else{
-                cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
-            }
+         } else{
+             Eigen::Vector3f trans = cyls[0].getTranslation();
+             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+             if(trans == Eigen::Vector3f(5,5,5)){////check if its first iteration of a turn
+                 start_counter=1;////starts counter for turning cyls
+                 fullTurnAction=true;
+                 cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());////geting the real first translation and rotation
+                 Eigen::Vector2f next_rot=cyls[0].getRotation();
+                 if(next_rot[0]==3.0){
+                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
+                 }
+                 else{
+                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
+                 }
 
-        }else if(trans ==Eigen::Vector3f(7,7,7)){////check if its thr end of a turn for cyls[0]
-            end_counter=0;////starts counter for stoping cyls
+             }else if(trans ==Eigen::Vector3f(7,7,7)){////check if its thr end of a turn for cyls[0]
+                 end_counter=0;////starts counter for stoping cyls
 
-        }else{
-            cyls[0].getCyl()->Translate(system*trans);////if its not the end and not the start move acording to the trans and rot
-            Eigen::Vector2f next_rot=cyls[0].getRotation();
-            if(next_rot[0]==3.0){
-                cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
-            }
-            else{
-                cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
-            }
-        }
-
-
-    }
-    //// Check that balls doesn't move outside the box
-    for (int i = 0; i < fruits.size(); i++) {
-        std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
-        Eigen::Vector3f curVeloc = fruits[i].getVelocity();
-        if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
-            fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), curVeloc.y(), curVeloc.z()));
-        }
-        if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
-            fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), curVeloc.y(), -curVeloc.z()));
-        }
-        if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
-            fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
-        }
-        curModel->Translate(fruits[i].getVelocity());////moving the fruits
-    }
+             }else{
+                 cyls[0].getCyl()->Translate(system*trans);////if its not the end and not the start move acording to the trans and rot
+                 Eigen::Vector2f next_rot=cyls[0].getRotation();
+                 if(next_rot[0]==3.0){
+                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
+                 }
+                 else{
+                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
+                 }
+             }
 
 
-    ////check colision with balls
-    collidingSnakeWithBall();
+         }
+         //// Check that balls doesn't move outside the box
+         for (int i = 0; i < fruits.size(); i++) {
+             std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
+             Eigen::Vector3f curVeloc = fruits[i].getVelocity();
+             if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
+                 fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), curVeloc.y(), curVeloc.z()));
+             }
+             if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
+                 fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), curVeloc.y(), -curVeloc.z()));
+             }
+             if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
+                 fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
+             }
+             curModel->Translate(fruits[i].getVelocity());////moving the fruits
+         }
 
 
-    ////check if the snack is going out of limit
-    if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
-        SetActive(!IsActive());
-        lose= true;
-    }
-    if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
-        SetActive(!IsActive());
-        lose=true;
-    }
-    if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
-        SetActive(!IsActive());
-        lose=true;
-    }
+         ////check colision with balls
+         collidingSnakeWithBall();
 
 
-    //// Handle speed boost timer
-    if(speedTimer>0){
-        speedTimer--;
-        if(speedTimer==0) {
-            speedFactor = speedFactor / 10;
-            std::cout<<"speed down"<<std::endl;
+         ////check if the snack is going out of limit
+         if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
+             SetActive(!IsActive());
+             playing= false;
+             lose= true;
+         }
+         if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
+             SetActive(!IsActive());
+             playing=false;
+             lose=true;
+         }
+         if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
+             SetActive(!IsActive());
+             playing=false;
+             lose=true;
+         }
 
-        }
-    }
 
-    //// Handle magnet boost timer
-    if(magnetTimer>0){
-        magnetTimer--;
-        if(magnetTimer==0) {
-            scale=0.5;
-            std::cout<<"magnet down"<<std::endl;
+         //// Handle speed boost timer
+         if(speedTimer>0){
+             speedTimer=speedTimer-15;
+             if(speedTimer==0) {
+                 speedFactor = speedFactor / 10;
+                 std::cout<<"speed down"<<std::endl;
 
-        }
-    }
+             }
+         }
 
-    //// Check self collision of the snake
-    for(int i=1;i<cyls.size();i++){
-        if(isSnakeCollide(i)){
+         //// Handle magnet boost timer
+         if(magnetTimer>0){
+             magnetTimer=magnetTimer-15;
+             if(magnetTimer==0) {
+                 scale=0.5;
+                 std::cout<<"magnet down"<<std::endl;
+
+             }
+         }
+
+         //// Check self collision of the snake
+         for(int i=1;i<cyls.size();i++){
+             if(isSnakeCollide(i)){
 //            lose=true;
-        }
-    }
+             }
+         }
+
+
+
+
+
+
+     }
+
+
 }
 
 void SceneWithCameras::Update(const Program& p, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)

@@ -50,7 +50,7 @@ public:
 
     virtual bool IsActive() const  ;
 
-    virtual void SetActive(bool animate);
+    virtual void SetActive(bool  animate);
     float speedFactor=0.5; //For speeding snake's speed
 
 
@@ -61,7 +61,7 @@ protected:
     int xAtPress = -1, yAtPress = -1;
     float pickedModelDepth = 0;
     Eigen::Affine3f pickedToutAtPress, cameraToutAtPress;
-    bool animate= false;
+    std::shared_ptr<bool> animate= std::make_shared<bool>(false);
     Display mydisplay;
 };
 

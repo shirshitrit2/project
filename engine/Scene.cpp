@@ -160,11 +160,11 @@ void Scene::ViewportSizeCallback(Viewport* viewport)
 }
 
     bool Scene::IsActive() const {
-        return animate;
+        return *animate;
     }
 
-    void Scene::SetActive(bool animate) {
-        Scene::animate = animate;
+    void Scene::SetActive(bool  animate) {
+        Scene::animate = std::make_shared<bool>(animate);
     }
 
     void Scene::setDisplay(const Display &display) {

@@ -5,6 +5,8 @@
 #include "igl/AABB.h"
 #include "Fruit.h"
 #include "Cyl.h"
+#include <SFML/Audio.hpp>
+
 
 
 class SceneWithCameras : public cg3d::SceneWithImGui
@@ -40,7 +42,7 @@ private:
     int limits=200;
     int speedTimer=0;
     int magnetTimer=0;
-    int level=0;
+    int level=1;
     float fac=0.5;
     bool turn =false;
     int end_counter=18;
@@ -48,6 +50,15 @@ private:
     bool fullTurnAction=false;
     double snakescale;
     double  fruitscale;
+    sf::SoundBuffer mainBuffer;
+    sf::Sound mainSound;
+    sf::SoundBuffer biteBuffer;
+    sf::Sound bite;
+    bool imunity = false;
+    bool playing=false;
+    bool resetPlay = false;
+    std::shared_ptr<cg3d::Program> program;
+
 
 
 
@@ -82,6 +93,8 @@ private:
     void handleSound();
     void placeFruits(Fruit f);
     void ourUpdate();
+    void reset();
 
-};
+
+    };
 

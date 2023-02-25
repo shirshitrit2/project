@@ -14,7 +14,7 @@ Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color
         this->velocity = findVelocity(0.2);
     }
     if(color=="red"){////win
-        this->velocity = findVelocity(1);
+        this->velocity = findVelocity(0.2);
     }
     if(color=="black"){////bomb
         this->velocity= findVelocity(0.1);

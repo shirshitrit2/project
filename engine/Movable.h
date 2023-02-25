@@ -41,7 +41,7 @@ public:
 
     void AddChild(std::shared_ptr<Movable> child);
     void AddChildren(const std::vector<std::shared_ptr<Movable>>& _children);
-    void RemoveChild(const std::shared_ptr<Movable>& child);
+    void RemoveChild(const std::shared_ptr<Movable>& childToRemove);
 
     virtual void SetCenter(const Eigen::Vector3f& point);
 
