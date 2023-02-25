@@ -39,11 +39,15 @@ private:
     bool lose=false;
     int limits=200;
     int speedTimer=0;
+    int magnetTimer=0;
     int level=0;
     float fac=0.5;
     bool turn =false;
     int end_counter=18;
     int start_counter= 18;
+    bool fullTurnAction=false;
+    double snakescale;
+    double  fruitscale;
 
 
 
@@ -76,6 +80,7 @@ private:
     void collidingBalls();
     void collidingSnakeWithBall();
     void handleSound();
+    void placeFruits(Fruit f);
     void ourUpdate();
 
 };
