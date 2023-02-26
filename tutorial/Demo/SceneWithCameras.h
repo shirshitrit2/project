@@ -35,7 +35,7 @@ private:
     std::vector<Fruit> fruits;
     igl::AABB<Eigen::MatrixXd,3> snakeTree;
     float scaleFactor = 1;
-    int scoreCounter=120;
+    int scoreCounter=0;
     double scale=0.5;
     std::shared_ptr<cg3d::Model> currSphere;
     bool win=false;
@@ -46,8 +46,8 @@ private:
     int level=1;
     float fac=0.5;
     bool turn =false;
-    int end_counter=18;
-    int start_counter= 18;
+    int end_counter=180;
+    int start_counter= 180;
     bool fullTurnAction=false;
     double snakescale;
     double  fruitscale;

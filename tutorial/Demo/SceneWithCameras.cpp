@@ -179,6 +179,7 @@ void SceneWithCameras::BuildImGui()
             ImGui::SetCursorPosX(360);
 
             if (ImGui::Button("quit")){
+                SetActive(!IsActive());
                 glfwDestroyWindow(window);
                 mainSound.stop();
 
@@ -218,6 +219,7 @@ void SceneWithCameras::BuildImGui()
             ImGui::SetCursorPosX(355);
 
             if (ImGui::Button("quit")){
+                SetActive(!IsActive());
                 glfwDestroyWindow(window);
                 mainSound.stop();
 
@@ -289,12 +291,12 @@ void SceneWithCameras::BuildImGui()
                         std::this_thread::sleep_for(std::chrono::milliseconds(30));
                     }
                 }).detach();
-//                Init(45.0f,800,800,0.1f,120.0f);
             }
             ImGui::SetCursorPosX(355);
 
              if (ImGui::Button("quit")){
-                glfwDestroyWindow(window);
+                 SetActive(!IsActive());
+                 glfwDestroyWindow(window);
                 mainSound.stop();
             }
             ImGui::PopStyleColor();
@@ -310,18 +312,9 @@ void SceneWithCameras::BuildImGui()
 }
 
 void SceneWithCameras::reset(int j){
-//
-/////MAKE GLOBAL meterial ans sphere mesh
-//    auto material{ std::make_shared<Material>("material", program)};
-//    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
-//    Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
-//    f.getModel()->Scale(8);
-//    fruits.push_back(f);
-//    placeFruits(f);
-//    root->AddChild(f.getModel());
 
-////                Init(45.0f,800,800,0.1f,120.0f);
     level=level+j;
+
     Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
     while(!cyls[0].isTranslationEmpty()){
         cyls[0].getTranslation();
@@ -335,8 +328,7 @@ void SceneWithCameras::reset(int j){
     cyls[0].getCyl()->Translate(Eigen::Vector3f(-cyls[0].getCyl()->GetTranslation().x(),-cyls[0].getCyl()->GetTranslation().y(),-cyls[0].getCyl()->GetTranslation().z()));
     cyls[0].getCyl()->Rotate(cyls[0].getCyl()->GetRotation().transpose());
 
-    for(int i = 14;i > 0; i--) {
-//        cyls[i].getCyl().Tr
+    for(int i = cyls.size()-1;i > 0; i--) {
         Eigen::Matrix4f trans=cyls[0].getCyl()->GetTransform();
         cyls[i].getCyl()->SetTransform(trans);
         cyls[i].getCyl()->Rotate(cyls[i].getCyl()->GetRotation().transpose());
@@ -344,7 +336,6 @@ void SceneWithCameras::reset(int j){
 //        cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
         cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
     }
-
 
     ///add bomb
     for(int i=0; i<j; i++){
@@ -385,10 +376,7 @@ void SceneWithCameras::SetCamera(int index)
 bool SceneWithCameras::findSmallestBox(igl::AABB<Eigen::MatrixXd,3> tree1,igl::AABB<Eigen::MatrixXd,3> tree2,Fruit f){
 
     if(isCollide(f)) {
-//        return true;
         if (tree1.is_leaf() && tree2.is_leaf()) {
-//            smallestbox1=tree1.m_box;
-//            smallestbox2=tree2.m_box;
             return true;
         } else if (tree1.is_leaf() && !tree2.is_leaf())
             return findSmallestBox(tree1, *tree2.m_left,f) || findSmallestBox(tree1, *tree2.m_right,f);
@@ -663,8 +651,6 @@ void SceneWithCameras::initSnakeTree(){
 void SceneWithCameras::collidingSnakeWithBall(){
     for(int i=0; i<fruits.size(); i++){
         if(findSmallestBox(snakeTree,fruits[i].getTree(), fruits[i])){
-//            fruits[i].getModel()->Translate(Eigen::Vector3f(-3,0,-3));
-//            fruits[i].setVelocity(Eigen::Vector3f(0,0,0));
             placeFruits(fruits[i]);
             bite.play();
             bite.setVolume(100);
@@ -672,26 +658,21 @@ void SceneWithCameras::collidingSnakeWithBall(){
             if(fruits[i].getColor()=="yellow"){
                 scoreCounter=scoreCounter+10;
                 std::cout<< scoreCounter <<std::endl;
-
             }
             //// Magnet balls.
             if(fruits[i].getColor()=="blue"){
                 scale=1;
                 magnetTimer=3000;
-//                root->AddChild(currSphere);
             }
             //// Winning ball
             if(fruits[i].getColor()=="red"){
-//                SetActive(!IsActive());
                 playing= false;
-//                init();
                 win=true;
             }
             //// Bomb ball
             if(fruits[i].getColor()=="black"){
                 if(!imunity){
                     playing= false;
-//                    SetActive(!IsActive());
                     lose=true;
                 } else{
                     imunity= false;
@@ -699,16 +680,10 @@ void SceneWithCameras::collidingSnakeWithBall(){
                     catchbombwithimunuty = true;
                     bombBonusCounter =0;
                 }
-
             }
             //// imunity
             if(fruits[i].getColor()=="green"){
-//                speedFactor=speedFactor*10;
-//                speedTimer=3000;
-//                std::cout<<"speed up"<<std::endl;
                 imunity=true;
-
-
             }
 
         }
@@ -787,7 +762,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 //    cyls[0].getCyl()->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
     root->AddChild(cyls[0].getCyl());
-    for(int i = 1;i < 15; i++)
+    for(int i = 1;i < 16; i++)
     {
         Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), grass));
         cyls.push_back( cur);
@@ -810,32 +785,32 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    cylinder->AddChildren({sphere1, sphere2});
 
     //// Blue fruits- magnets
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.1f, 5.0f, 0.9f)), "blue");
+    for(int i=0; i<3; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.5f, 5.0f, 0.9f)), "blue");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Yellow fruits- score
-    for(int i=0; i<0; i++){
+    for(int i=0; i<10; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.6f,1.0f, 0.0f, 0.9f)), "yellow");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
+    for(int i=0; i<1; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.5f,0.0f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<0; i++){
+    for(int i=0; i<1; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Green fruits- immunity
-    for(int i=0; i<0; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 0.0f, 0.9f)), "green");
+    for(int i=0; i<3; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.5f, 0.0f, 0.9f)), "green");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
@@ -874,11 +849,11 @@ void SceneWithCameras::ourUpdate(){
 //        reset();
      if(playing){
 
-        if(end_counter==15){
+        if(end_counter==cyls.size()){
             turn= false;
             fullTurnAction= false;
         }
-        if(start_counter==15){
+        if(start_counter==cyls.size()){
             turn=true;
         }
         ////move cyls[1]-cyls[n]
@@ -888,7 +863,7 @@ void SceneWithCameras::ourUpdate(){
                 cyls[i].getCyl()->SetTransform(trans);
             }
         }else{
-            if(start_counter>15){////evryone goinig strait
+            if(start_counter>cyls.size()){////evryone goinig strait
                 for(int i = (cyls.size()-1);i>0;i--){
                     Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
                     cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
@@ -975,17 +950,14 @@ void SceneWithCameras::ourUpdate(){
 
         ////check if the snack is going out of limit
         if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
-//            SetActive(!IsActive());
             playing= false;
             lose= true;
         }
         if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
-//            SetActive(!IsActive());
             playing=false;
             lose=true;
         }
         if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
-//            SetActive(!IsActive());
             playing=false;
             lose=true;
         }
@@ -1006,7 +978,7 @@ void SceneWithCameras::ourUpdate(){
             magnetTimer=magnetTimer-15;
             if(magnetTimer==0) {
                 scale=0.5;
-                std::cout<<"magnet down"<<std::endl;
+//                std::cout<<"magnet down"<<std::endl;
 
             }
         }
@@ -1164,7 +1136,6 @@ void SceneWithCameras::AddViewportCallback(Viewport* _viewport)
 
 
 void SceneWithCameras::handleSound() {
-    // Initialize OpenAL
     ALCdevice* device = alcOpenDevice(nullptr);
     ALCcontext* context = alcCreateContext(device, nullptr);
     alcMakeContextCurrent(context);
