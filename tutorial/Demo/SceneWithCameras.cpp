@@ -52,6 +52,22 @@ void SceneWithCameras::BuildImGui()
         ImGui::SameLine(0);
         ImGui::Text(n_char);
 
+        if(scoreCounter>=100){
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f,0.0f,0.0f,1.0f)); // Set text color to yellow
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f,1.0f,0.0f,1.0f)); // Set text color to yellow
+            if (ImGui::Button("Add winning ball (-100 points)")){
+                Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(1.0f,0.0f, 0.0f, 0.9f)), "red");
+                f.getModel()->Scale(8);
+                fruits.push_back(f);
+                placeFruits(f);
+                root->AddChild(f.getModel());
+                scoreCounter-=100;
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+        }
+
+
         if(imunity){
             ImGui::TextColored(ImVec4(1,0,0,1),"IMMUNITY");
 
@@ -293,7 +309,7 @@ void SceneWithCameras::BuildImGui()
 
 }
 
-void SceneWithCameras::reset(int i){
+void SceneWithCameras::reset(int j){
 //
 /////MAKE GLOBAL meterial ans sphere mesh
 //    auto material{ std::make_shared<Material>("material", program)};
@@ -305,7 +321,7 @@ void SceneWithCameras::reset(int i){
 //    root->AddChild(f.getModel());
 
 ////                Init(45.0f,800,800,0.1f,120.0f);
-    level=level+i;
+    level=level+j;
     Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
     while(!cyls[0].isTranslationEmpty()){
         cyls[0].getTranslation();
@@ -327,6 +343,16 @@ void SceneWithCameras::reset(int i){
         cyls[i].getCyl()->Translate(1.6f * scaleFactor, Axis::X);
 //        cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
         cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
+    }
+
+
+    ///add bomb
+    for(int i=0; i<j; i++){
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black");
+        f.getModel()->Scale(8);
+        fruits.push_back(f);
+        placeFruits(f);
+        root->AddChild(f.getModel());
     }
     playing=true;
     lose=false;
@@ -699,7 +725,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 //    program = std::make_shared<Program>("shaders/phongShader");
     carbon = std::make_shared<Material>("carbon", program);
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
-    auto material{ std::make_shared<Material>("material", program)}; // empty material
+    material= std::make_shared<Material>("material", program); // empty material
 
     //// Sound:
 //    sf::SoundBuffer buffer;
@@ -778,7 +804,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     initSnakeTree();
 
     //// Fruits:
-    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
+    sphereMesh=ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj");
 //    yellowSpheres.push_back( Model::Create("sphere1", sphereMesh, grass));
 //    blueSpheres.push_back( Model::Create("sphere1", sphereMesh, bricks));
 //    cylinder->AddChildren({sphere1, sphere2});
@@ -796,7 +822,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);

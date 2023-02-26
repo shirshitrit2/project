@@ -35,7 +35,7 @@ private:
     std::vector<Fruit> fruits;
     igl::AABB<Eigen::MatrixXd,3> snakeTree;
     float scaleFactor = 1;
-    int scoreCounter=0;
+    int scoreCounter=120;
     double scale=0.5;
     std::shared_ptr<cg3d::Model> currSphere;
     bool win=false;
@@ -66,6 +66,8 @@ private:
     int bombBonusCounter =112;
     ImTextureID texture_id;
     int guiwidth=0, guiheight=0, guichannels=0;
+//    Fruit bomb;
+
 
 
 
@@ -101,7 +103,7 @@ private:
     void handleSound();
     void placeFruits(Fruit f);
     void ourUpdate();
-    void reset(int i);
+    void reset(int j);
 
 
     };
