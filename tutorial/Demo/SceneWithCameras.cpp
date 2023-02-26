@@ -594,8 +594,8 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 {
     // create the basic elements of the scene
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
-    carbon = std::make_shared<Material>("carbon", program); // default material
+    program = std::make_shared<Program>("shaders/phongShader");
+    carbon = std::make_shared<Material>("carbon", program);
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
     auto material{ std::make_shared<Material>("material", program)}; // empty material
 
@@ -630,7 +630,9 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     camList[0]->Translate(50, Axis::Y);
     camList[0]->Translate(5, Axis::X);
 
-    camList[1]->Translate(-0.8, Axis::X);
+    camList[1]->Translate(0.8, Axis::Y);
+    camList[1]->Translate(-0.2, Axis::X);
+
     camList[1]->RotateByDegree(90, Axis::Y);
     camera = camList[1];
 
