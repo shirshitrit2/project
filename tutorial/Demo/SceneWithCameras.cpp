@@ -266,21 +266,28 @@ void SceneWithCameras::BuildImGui()
             ImGui::TextColored(ImVec4(0.0f,0.0f,0.0f,1.0f),"Black- A bomb, will kill you and finish the game.");
             ImGui::SetCursorPosX(10); // set x position of text
 
-            ImGui::TextColored(ImVec4(0.54f,0.03f,0.88f,1.0f),"Purple- 10 Points.");
+            ImGui::TextColored(ImVec4(0.54f,0.03f,0.88f,1.0f),"Purple- 10 Points (100 points = new red ball).");
             ImGui::SetCursorPosX(10); // set x position of text
 
-            ImGui::TextColored(ImVec4(0.0f,0.0f,1.0f,1.0f),"Blue- Magnet powerup, you range of collecting balls wil increase.");
+            ImGui::TextColored(ImVec4(0.0f,0.0f,1.0f,1.0f),"Blue- Magnet powerup, ");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.0f,1.0f,1.0f),"your range of collecting balls wil increase.");
             ImGui::SetCursorPosX(10); // set x position of text
 
             ImGui::TextColored(ImVec4(0.0f,0.5f,0.0f,1.0f),"Green- Immunity powerup, ");
             ImGui::SetCursorPosX(10); // set x position of text
 
             ImGui::TextColored(ImVec4(0.0f,0.5f,0.0f,1.0f),"will switch bomb from killing to giving extra points.");
+            ImGui::SetCursorPosX(200); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Be carefull of the walls!");
+
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
             ImGui::SetCursorPosX(350);
-            ImGui::SetCursorPosY(550);
+            ImGui::SetCursorPosY(600);
 
             ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
 
@@ -664,7 +671,7 @@ void SceneWithCameras::collidingSnakeWithBall(){
             }
             //// Magnet balls.
             if(fruits[i].getColor()=="blue"){
-                scale=1;
+                scale=2;
                 magnetTimer=3000;
                 bite.play();
 
