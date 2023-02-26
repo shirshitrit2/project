@@ -556,7 +556,7 @@ void SceneWithCameras::collidingSnakeWithBall(){
             if(fruits[i].getColor()=="red"){
 //                SetActive(!IsActive());
                 playing= false;
-                init();
+//                init();
                 win=true;
             }
             //// Bomb ball
@@ -694,13 +694,13 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<0; i++){
+    for(int i=0; i<15; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<10; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         f.getModel()->Scale(8);
         fruits.push_back(f);
@@ -743,7 +743,8 @@ void SceneWithCameras::ourUpdate(){
     if(resetPlay){
         resetPlay=false;
         reset();
-    }else{
+    }else if(playing){
+
         if(end_counter==15){
             turn= false;
             fullTurnAction= false;
@@ -927,23 +928,23 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
                 SetCamera(index);
         }
         if(key == GLFW_KEY_UP){
-            if(!fullTurnAction){
+            if(!fullTurnAction && playing){
                 loadTurn(false,true);}
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
         if(key == GLFW_KEY_DOWN){
-            if(!fullTurnAction){
+            if(!fullTurnAction && playing){
                 loadTurn(true,true);}
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
         if(key == GLFW_KEY_RIGHT){
-            if(!fullTurnAction){
+            if(!fullTurnAction && playing){
                 loadTurn(false, false);}
 
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
         if(key == GLFW_KEY_LEFT){
-            if(!fullTurnAction){
+            if(!fullTurnAction && playing){
                 loadTurn(true, false);}
 
         }

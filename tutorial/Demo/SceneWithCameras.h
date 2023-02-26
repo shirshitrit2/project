@@ -67,6 +67,7 @@ private:
 
 
 
+
 public:
 
     SceneWithCameras(std::string name, cg3d::Display* display);
