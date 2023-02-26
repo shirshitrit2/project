@@ -5,6 +5,7 @@
 #include "igl/AABB.h"
 #include "Fruit.h"
 #include "Cyl.h"
+#include "imgui.h"
 #include <SFML/Audio.hpp>
 
 
@@ -57,13 +58,14 @@ private:
     bool imunity = false;
     bool playing=false;
     bool resetPlay = false;
-    std::shared_ptr<cg3d::Program> program;
+    std::shared_ptr<cg3d::Program> program=std::make_shared<cg3d::Program>("shaders/phongShader");;
     std::shared_ptr<cg3d::Material> material;
     std::shared_ptr<cg3d::Mesh> sphereMesh;
     Eigen::Matrix3f initSnakeRotation;
     bool catchbombwithimunuty= false;
     int bombBonusCounter =112;
-
+    ImTextureID texture_id;
+    int guiwidth=0, guiheight=0, guichannels=0;
 
 
 

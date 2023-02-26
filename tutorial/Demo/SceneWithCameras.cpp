@@ -21,6 +21,9 @@
 #include <chrono>
 #include <thread>
 #include <SFML/Audio.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 
 
@@ -35,8 +38,10 @@ void SceneWithCameras::BuildImGui()
 
     if(playing){
         ImGui::Begin("Menu", pOpen, flags);
-        ImGui::SetWindowPos(ImVec2(280, 0), ImGuiCond_Always);
+        ImGui::SetWindowPos(ImVec2(250, 0), ImGuiCond_Always);
         ImGui::SetWindowSize(ImVec2(0, 0), ImGuiCond_Always);
+        ImGui::SetWindowFontScale(1.5f); // set font scale to 2x the default size
+
 //    if (ImGui::Button("Load object"))
 //        LoadObjectFromFileDialog();
 
@@ -48,7 +53,7 @@ void SceneWithCameras::BuildImGui()
         ImGui::Text(n_char);
 
         if(imunity){
-            ImGui::TextColored(ImVec4(1,0,0,1),"IMUNITY");
+            ImGui::TextColored(ImVec4(1,0,0,1),"IMMUNITY");
 
         }
         if(catchbombwithimunuty){
@@ -79,18 +84,30 @@ void SceneWithCameras::BuildImGui()
 
 
         ImGui::Text("Camera: ");
+
+
         for (int i = 0; i < camList.size(); i++) {
             ImGui::SameLine(0);
             bool selectedCamera = camList[i] == camera;
             if (selectedCamera)
                 ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
             if(i==0){
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
                 if (ImGui::Button("Top view"))
                     SetCamera(i);
+                ImGui::PopStyleColor();
+                ImGui::PopStyleColor();
+
             }
             if(i==1){
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
                 if (ImGui::Button("Snake view"))
                     SetCamera(i);
+                ImGui::PopStyleColor();
+                ImGui::PopStyleColor();
+
             }
 //        if (ImGui::Button(std::to_string(i + 1).c_str()))
 //            SetCamera(i);
@@ -98,14 +115,37 @@ void SceneWithCameras::BuildImGui()
                 ImGui::PopStyleColor();
         }
         ImGui::End();
+
     }
     else{
 
         if(win){
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.9f, 0.4f, 1.0f)); // set blue color
             ImGui::Begin("Menu", pOpen, flags);
-            ImGui::SetWindowPos(ImVec2(220, 220), ImGuiCond_Always);
-            ImGui::SetWindowSize(ImVec2(400, 400), ImGuiCond_Always);
-            ImGui::Text("Level finished! ");
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::SetWindowFontScale(3.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(210); // set x position of text
+            ImGui::SetCursorPosY(200); // set y position of text
+
+            std::string t = std::to_string(level);
+            char const *n_char = t.c_str();
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Level ");
+            ImGui::SameLine(0);
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),n_char);
+            ImGui::SameLine(0);
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f)," finished!");
+            ImGui::SetCursorPosX(220); // set x position of text
+            std::string t2 = std::to_string(scoreCounter);
+            char const *n_char2 = t2.c_str();
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Score: ");
+            ImGui::SameLine(0);
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),n_char2);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
+            ImGui::SetCursorPosX(320);
+            ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
 //            SetActive(!IsActive());
 
             if (ImGui::Button("Next level")){
@@ -113,64 +153,106 @@ void SceneWithCameras::BuildImGui()
                 win=false;
                 level++;
                 resetPlay = true;
-//                SetActive(!IsActive());
-
-
-//                auto program = std::make_shared<Program>("shaders/phongShader"); // TODO: TAL: replace with hard-coded basic program
-//
-//                auto material{ std::make_shared<Material>("material", program)}; // empty material
-//                auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
-//                Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
-//                f.getModel()->Scale(8);
-//                fruits.push_back(f);
-//                placeFruits(f);
-//
-//////                Init(45.0f,800,800,0.1f,120.0f);
-//                cyls[0].getCyl()->SetCenter(Eigen::Vector3f(0,0,0));
-//                for(int i = 14;i > 0; i--) {
-////                    cyls[i].getCyl().
-//                    cyls[i].getCyl()->Translate(1.6f * scaleFactor, Axis::X);
-//                    cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
-//                    cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
-//                }
-////               root->RemoveChild(cyls[0].getCyl());
-//
-//                SetActive(!IsActive());
-//                std::thread([&]() {
-//                    while (IsActive()) {
-//                        this->ourUpdate();
-//                        std::this_thread::sleep_for(std::chrono::milliseconds(30));
-//                    }
-//                }).detach();
 
             }
-            else if (ImGui::Button("quit")){
-                glfwDestroyWindow(window);
-                mainSound.stop();
+            ImGui::SetCursorPosX(360);
 
-                //std::terminate();
-            }
-            ImGui::End();
-        }
-        else if(lose){
-            ImGui::Begin("Menu", pOpen, flags);
-            ImGui::SetWindowPos(ImVec2(220, 220), ImGuiCond_Always);
-            ImGui::SetWindowSize(ImVec2(400, 400), ImGuiCond_Always);
-            ImGui::Text("Game over! ");
             if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
                 mainSound.stop();
 
                 //std::terminate();
             }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
             ImGui::End();
+            ImGui::PopStyleColor();
+
+        }
+        else if(lose){
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.9f, 0.4f, 1.0f)); // set blue color
+            ImGui::Begin("Menu", pOpen, flags);
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::SetWindowFontScale(4.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(260); // set x position of text
+            ImGui::SetCursorPosY(200); // set y position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.0f,0.0f,1.0f),"Game over! ");
+            ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(330); // set x position of text
+            std::string t2 = std::to_string(scoreCounter);
+            char const *n_char2 = t2.c_str();
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Score: ");
+            ImGui::SameLine(0);
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),n_char2);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
+            ImGui::SetCursorPosX(365);
+
+            if (ImGui::Button("quit")){
+                glfwDestroyWindow(window);
+                mainSound.stop();
+
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::End();
+            ImGui::PopStyleColor();
 
         }
         else if(level==1){
+
+            ImGuiIO& io = ImGui::GetIO();
+
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.9f, 0.4f, 1.0f)); // set blue color
+
             ImGui::Begin("Menu", pOpen, flags);
-            ImGui::SetWindowPos(ImVec2(220, 220), ImGuiCond_Always);
-            ImGui::SetWindowSize(ImVec2(400, 400), ImGuiCond_Always);
-            ImGui::Text("Welcome!");
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(800, 800), ImGuiCond_Always);
+            ImGui::SetWindowFontScale(3.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(320); // set x position of text
+            ImGui::SetCursorPosY(200); // set y position of text
+            // Load a bold font
+
+//            ImGui::Text("Welcome!");
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Welcome!");
+            ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(10); // set x position of text
+            ImGui::SetCursorPosY(270);
+
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"In this game, you are a snake in an underwater world ");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"full of colorful balls, each one has it's own power:");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+
+            ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f),"Red- Win the level.");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.0f,0.0f,1.0f),"Black- A bomb, will kill you and finish the game.");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.54f,0.03f,0.88f,1.0f),"Purple- 10 Points.");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.0f,1.0f,1.0f),"Blue- Magnet powerup, you range of collecting balls wil increase.");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.5f,0.0f,1.0f),"Green- Immunity powerup, ");
+            ImGui::SetCursorPosX(10); // set x position of text
+
+            ImGui::TextColored(ImVec4(0.0f,0.5f,0.0f,1.0f),"will switch bomb from killing to giving extra points.");
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
+            ImGui::SetCursorPosX(350);
+            ImGui::SetCursorPosY(550);
+
+            ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
+
             if (ImGui::Button("Start")){
                 SetActive(!IsActive());
                 playing=true;
@@ -182,12 +264,18 @@ void SceneWithCameras::BuildImGui()
                 }).detach();
 //                Init(45.0f,800,800,0.1f,120.0f);
             }
-            else if (ImGui::Button("quit")){
+            ImGui::SetCursorPosX(355);
+
+             if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
                 mainSound.stop();
-                //std::terminate();
             }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+
+            ////add image
             ImGui::End();
+            ImGui::PopStyleColor();
         }
     }
 
@@ -594,7 +682,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 {
     // create the basic elements of the scene
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    program = std::make_shared<Program>("shaders/phongShader");
+//    program = std::make_shared<Program>("shaders/phongShader");
     carbon = std::make_shared<Material>("carbon", program);
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
     auto material{ std::make_shared<Material>("material", program)}; // empty material
@@ -694,13 +782,13 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<0; i++){
+    for(int i=0; i<15; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         f.getModel()->Scale(8);
         fruits.push_back(f);
@@ -729,6 +817,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         root->AddChild(fruits[i].getModel());
     }
 
+/////Imgui
 
     background->Scale(limits, Axis::XYZ);
     background->SetPickable(false);
