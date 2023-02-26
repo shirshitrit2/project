@@ -101,7 +101,7 @@ private:
     void handleSound();
     void placeFruits(Fruit f);
     void ourUpdate();
-    void reset();
+    void reset(int i);
 
 
     };

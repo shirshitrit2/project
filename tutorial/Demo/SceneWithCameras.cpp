@@ -135,7 +135,8 @@ void SceneWithCameras::BuildImGui()
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),n_char);
             ImGui::SameLine(0);
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f)," finished!");
-            ImGui::SetCursorPosX(220); // set x position of text
+            ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
+            ImGui::SetCursorPosX(330); // set x position of text
             std::string t2 = std::to_string(scoreCounter);
             char const *n_char2 = t2.c_str();
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Score: ");
@@ -144,17 +145,21 @@ void SceneWithCameras::BuildImGui()
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
-            ImGui::SetCursorPosX(320);
+            ImGui::SetCursorPosX(315);
             ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
 //            SetActive(!IsActive());
 
             if (ImGui::Button("Next level")){
-
                 win=false;
-                level++;
-                resetPlay = true;
+                reset(1);
 
             }
+            ImGui::SetCursorPosX(315);
+
+            if (ImGui::Button("play again")){
+                reset(0);
+            }
+
             ImGui::SetCursorPosX(360);
 
             if (ImGui::Button("quit")){
@@ -189,13 +194,19 @@ void SceneWithCameras::BuildImGui()
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f,1.0f,1.0f,1.0f)); // Set text color to yellow
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.68f,0.68f,0.05f,1.0f)); // Set text color to yellow
-            ImGui::SetCursorPosX(365);
+            ImGui::SetCursorPosX(320);
+
+            if (ImGui::Button("play again")){
+                reset(0);
+            }
+            ImGui::SetCursorPosX(355);
 
             if (ImGui::Button("quit")){
                 glfwDestroyWindow(window);
                 mainSound.stop();
 
             }
+
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
             ImGui::End();
@@ -282,7 +293,7 @@ void SceneWithCameras::BuildImGui()
 
 }
 
-void SceneWithCameras::reset(){
+void SceneWithCameras::reset(int i){
 //
 /////MAKE GLOBAL meterial ans sphere mesh
 //    auto material{ std::make_shared<Material>("material", program)};
@@ -294,7 +305,7 @@ void SceneWithCameras::reset(){
 //    root->AddChild(f.getModel());
 
 ////                Init(45.0f,800,800,0.1f,120.0f);
-
+    level=level+i;
     Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
     while(!cyls[0].isTranslationEmpty()){
         cyls[0].getTranslation();
@@ -318,6 +329,9 @@ void SceneWithCameras::reset(){
         cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
     }
     playing=true;
+    lose=false;
+    win=false;
+    fullTurnAction= false;
 }
 
 void SceneWithCameras::DumpMeshData(const Eigen::IOFormat& simple, const MeshData& data)
@@ -782,13 +796,13 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<0; i++){
+    for(int i=0; i<15; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         f.getModel()->Scale(8);
         fruits.push_back(f);
@@ -829,10 +843,10 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
 void SceneWithCameras::ourUpdate(){
-    if(resetPlay){
-        resetPlay=false;
-        reset();
-    }else if(playing){
+//    if(resetPlay){
+//        resetPlay=false;
+//        reset();
+     if(playing){
 
         if(end_counter==15){
             turn= false;
@@ -935,17 +949,17 @@ void SceneWithCameras::ourUpdate(){
 
         ////check if the snack is going out of limit
         if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
-            SetActive(!IsActive());
+//            SetActive(!IsActive());
             playing= false;
             lose= true;
         }
         if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
-            SetActive(!IsActive());
+//            SetActive(!IsActive());
             playing=false;
             lose=true;
         }
         if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
-            SetActive(!IsActive());
+//            SetActive(!IsActive());
             playing=false;
             lose=true;
         }
