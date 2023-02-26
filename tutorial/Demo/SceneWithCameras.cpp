@@ -747,7 +747,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     //// Cameras:
     camList.resize(camList.capacity());
     camList[0] = Camera::Create("camera0", fov, float(width) / float(height), near, far);
-    camList[1] = Camera::Create(" ", fov, float(width) / float(height), near, far);
+    camList[1] = Camera::Create(" ", fov, float(width+100) / float(height), near, far);
     root->AddChild(camList[1] );
 
     camList[0]->RotateByDegree(-90, Axis::X);

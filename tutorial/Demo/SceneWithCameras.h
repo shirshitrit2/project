@@ -44,7 +44,7 @@ private:
     int speedTimer=0;
     int magnetTimer=0;
     int level=1;
-    float fac=0.4;
+    float fac=0.5;
     bool turn =false;
     int end_counter=180;
     int start_counter= 180;
