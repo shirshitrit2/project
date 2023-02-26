@@ -168,12 +168,13 @@ void SceneWithCameras::BuildImGui()
             if (ImGui::Button("Next level")){
                 win=false;
                 reset(1);
-
+                ready.play();
             }
             ImGui::SetCursorPosX(315);
 
             if (ImGui::Button("play again")){
                 reset(0);
+                ready.play();
             }
 
             ImGui::SetCursorPosX(360);
@@ -215,6 +216,7 @@ void SceneWithCameras::BuildImGui()
 
             if (ImGui::Button("play again")){
                 reset(0);
+                ready.play();
             }
             ImGui::SetCursorPosX(355);
 
@@ -284,6 +286,7 @@ void SceneWithCameras::BuildImGui()
 
             if (ImGui::Button("Start")){
                 SetActive(!IsActive());
+                ready.play();
                 playing=true;
                 std::thread([&]() {
                     while (IsActive()) {
@@ -652,10 +655,10 @@ void SceneWithCameras::collidingSnakeWithBall(){
     for(int i=0; i<fruits.size(); i++){
         if(findSmallestBox(snakeTree,fruits[i].getTree(), fruits[i])){
             placeFruits(fruits[i]);
-            bite.play();
             bite.setVolume(100);
             //// Score balls.
             if(fruits[i].getColor()=="yellow"){
+                money.play();
                 scoreCounter=scoreCounter+10;
                 std::cout<< scoreCounter <<std::endl;
             }
@@ -663,18 +666,24 @@ void SceneWithCameras::collidingSnakeWithBall(){
             if(fruits[i].getColor()=="blue"){
                 scale=1;
                 magnetTimer=3000;
+                bite.play();
+
             }
             //// Winning ball
             if(fruits[i].getColor()=="red"){
                 playing= false;
                 win=true;
+                victory.play();
+
             }
             //// Bomb ball
             if(fruits[i].getColor()=="black"){
                 if(!imunity){
                     playing= false;
                     lose=true;
+                    tryagain.play();
                 } else{
+                    money.play();
                     imunity= false;
                     scoreCounter+=50;
                     catchbombwithimunuty = true;
@@ -684,6 +693,8 @@ void SceneWithCameras::collidingSnakeWithBall(){
             //// imunity
             if(fruits[i].getColor()=="green"){
                 imunity=true;
+                bite.play();
+
             }
 
         }
@@ -701,6 +712,8 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     carbon = std::make_shared<Material>("carbon", program);
     carbon->AddTexture(0, "textures/carbon.jpg", 2);
     material= std::make_shared<Material>("material", program); // empty material
+    sponge = std::make_shared<Material>("carbon", program1);
+    sponge->AddTexture(0, "textures/sponge4.jpeg", 2);
 
     //// Sound:
 //    sf::SoundBuffer buffer;
@@ -710,9 +723,17 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     {
         std::cout << "Error: Failed to load sound file." << std::endl;
     }
+    moneybuffer.loadFromFile("textures/krab.wav");
+    readybuffer.loadFromFile("textures/ready.wav");
+    victorybuffer.loadFromFile("textures/victory.wav");
+    trybuffer.loadFromFile("textures/try.wav");
 
     mainSound.setBuffer(mainBuffer);
     bite.setBuffer(biteBuffer);
+    money.setBuffer(moneybuffer);
+    ready.setBuffer(readybuffer);
+    victory.setBuffer(victorybuffer);
+    tryagain.setBuffer(trybuffer);
     mainSound.setLoop(true);
     mainSound.play();
     mainSound.setVolume(30);
@@ -754,7 +775,8 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
     //// Snake:
-    Cyl cur(Model::Create("first", Mesh::Cylinder(), grass));
+    Cyl cur(Model::Create("first", Mesh::Cylinder(), sponge));
+
     cyls.push_back( cur);
     initSnakeRotation =cyls[0].getCyl()->GetRotation();
     cyls[0].getCyl()->Scale(scaleFactor,Axis::X);
@@ -764,7 +786,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     root->AddChild(cyls[0].getCyl());
     for(int i = 1;i < 16; i++)
     {
-        Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), grass));
+        Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), sponge));
         cyls.push_back( cur);
 //        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
         cyls[i].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
@@ -772,6 +794,8 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         cyls[i].getCyl()->Rotate(cyls[i-1].getCyl()->GetRotation());
         cyls[i].getCyl()->Translate(cyls[i-1].getCyl()->GetTranslation());
         root->AddChild(cyls[i].getCyl());
+
+
     }
 //    cyls[0].getCyl()->Translate({0.8f*scaleFactor,0,0});
     cyls[0].getCyl()->AddChild(camList[1]);
@@ -952,14 +976,17 @@ void SceneWithCameras::ourUpdate(){
         if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
             playing= false;
             lose= true;
+            tryagain.play();
         }
         if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
             playing=false;
             lose=true;
+            tryagain.play();
         }
         if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
             playing=false;
             lose=true;
+            tryagain.play();
         }
 
 

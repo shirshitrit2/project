@@ -14,7 +14,7 @@ class SceneWithCameras : public cg3d::SceneWithImGui
 {
 private:
     std::shared_ptr<Movable> root;
-    std::shared_ptr<cg3d::Material> carbon;
+    std::shared_ptr<cg3d::Material> carbon,sponge;
     //bool animate = false;
     void BuildImGui() override;
     std::vector<std::shared_ptr<cg3d::Camera>> camList{2};
@@ -44,7 +44,7 @@ private:
     int speedTimer=0;
     int magnetTimer=0;
     int level=1;
-    float fac=0.5;
+    float fac=0.4;
     bool turn =false;
     int end_counter=180;
     int start_counter= 180;
@@ -53,12 +53,13 @@ private:
     double  fruitscale;
     sf::SoundBuffer mainBuffer;
     sf::Sound mainSound;
-    sf::SoundBuffer biteBuffer;
-    sf::Sound bite;
+    sf::SoundBuffer biteBuffer, moneybuffer, trybuffer, readybuffer, victorybuffer;
+    sf::Sound bite, money, tryagain, ready, victory;
     bool imunity = false;
     bool playing=false;
     bool resetPlay = false;
     std::shared_ptr<cg3d::Program> program=std::make_shared<cg3d::Program>("shaders/phongShader");;
+    std::shared_ptr<cg3d::Program> program1 = std::make_shared<cg3d::Program>("shaders/basicShader"); //
     std::shared_ptr<cg3d::Material> material;
     std::shared_ptr<cg3d::Mesh> sphereMesh;
     Eigen::Matrix3f initSnakeRotation;
