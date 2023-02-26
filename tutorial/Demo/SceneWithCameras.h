@@ -54,7 +54,7 @@ private:
     sf::Sound mainSound;
     sf::SoundBuffer biteBuffer;
     sf::Sound bite;
-    bool imunity = true;
+    bool imunity = false;
     bool playing=false;
     bool resetPlay = false;
     std::shared_ptr<cg3d::Program> program;

@@ -46,11 +46,11 @@ void Scene::MouseCallback(Viewport* viewport, int x, int y, int button, int acti
         xAtPress = x;
         yAtPress = y;
 
-        if (pickedModel)
-            debug("found ", pickedModel->isPickable ? "pickable" : "non-pickable", " model at pos ", x, ", ", y, ": ",
-                  pickedModel->name, ", depth: ", pickedModelDepth);
-        else
-            debug("found nothing at pos ", x, ", ", y);
+//        if (pickedModel)
+//            debug("found ", pickedModel->isPickable ? "pickable" : "non-pickable", " model at pos ", x, ", ", y, ": ",
+//                  pickedModel->name, ", depth: ", pickedModelDepth);
+//        else
+//            debug("found nothing at pos ", x, ", ", y);
 
         if (pickedModel && !pickedModel->isPickable)
             pickedModel = nullptr; // for non-pickable models we need only pickedModelDepth for mouse movement calculations later
@@ -65,44 +65,44 @@ void Scene::MouseCallback(Viewport* viewport, int x, int y, int button, int acti
 void Scene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, int yoffset, bool dragging, int buttonState[])
 {
     // note: there's a (small) chance the button state here precedes the mouse press/release event
-    auto system = camera->GetRotation().transpose();
-    if (pickedModel) {
-        pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
-        pickedToutAtPress = pickedModel->GetTout();
-    } else {
-        camera->TranslateInSystem(system, {0, 0, -float(yoffset)});
-        cameraToutAtPress = camera->GetTout();
-    }
+//    auto system = camera->GetRotation().transpose();
+//    if (pickedModel) {
+//        pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
+//        pickedToutAtPress = pickedModel->GetTout();
+//    } else {
+//        camera->TranslateInSystem(system, {0, 0, -float(yoffset)});
+//        cameraToutAtPress = camera->GetTout();
+//    }
 }
 
 void Scene::CursorPosCallback(Viewport* viewport, int x, int y, bool dragging, int* buttonState)
 {
     if (dragging) {
-        auto system = camera->GetRotation().transpose();
-        auto moveCoeff = camera->CalcMoveCoeff(pickedModelDepth, viewport->width);
-        auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
-        if (pickedModel) {
-            pickedModel->SetTout(pickedToutAtPress);
-            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE)
-                pickedModel->TranslateInSystem(system, {float(x - xAtPress) / moveCoeff, float(yAtPress - y) / moveCoeff, 0});
-            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
-                pickedModel->RotateInSystem(system, float(x - xAtPress) / moveCoeff, Axis::Z);
-            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE) {
-                pickedModel->RotateInSystem(system, float(x - xAtPress) / moveCoeff, Axis::Y);
-                pickedModel->RotateInSystem(system, float(y - yAtPress) / moveCoeff, Axis::X);
-            }
+//        auto system = camera->GetRotation().transpose();
+//        auto moveCoeff = camera->CalcMoveCoeff(pickedModelDepth, viewport->width);
+//        auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
+//        if (pickedModel) {
+//            pickedModel->SetTout(pickedToutAtPress);
+//            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE)
+//                pickedModel->TranslateInSystem(system, {float(x - xAtPress) / moveCoeff, float(yAtPress - y) / moveCoeff, 0});
+//            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
+//                pickedModel->RotateInSystem(system, float(x - xAtPress) / moveCoeff, Axis::Z);
+//            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE) {
+//                pickedModel->RotateInSystem(system, float(x - xAtPress) / moveCoeff, Axis::Y);
+//                pickedModel->RotateInSystem(system, float(y - yAtPress) / moveCoeff, Axis::X);
+//            }
         } else {
-            camera->SetTout(cameraToutAtPress);
-            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE)
-                camera->TranslateInSystem(system, {float(xAtPress - x) / moveCoeff, float(y - yAtPress) / moveCoeff, 0});
-            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
-                camera->RotateInSystem(system, float(x - xAtPress) / 180, Axis::Z);
-            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE) {
-                camera->RotateInSystem(system, float(x - xAtPress) / angleCoeff, Axis::Y);
-                camera->RotateInSystem(system, float(y - yAtPress) / angleCoeff, Axis::X);
-            }
+//            camera->SetTout(cameraToutAtPress);
+//            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE)
+//                camera->TranslateInSystem(system, {float(xAtPress - x) / moveCoeff, float(y - yAtPress) / moveCoeff, 0});
+//            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
+//                camera->RotateInSystem(system, float(x - xAtPress) / 180, Axis::Z);
+//            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE) {
+//                camera->RotateInSystem(system, float(x - xAtPress) / angleCoeff, Axis::Y);
+//                camera->RotateInSystem(system, float(y - yAtPress) / angleCoeff, Axis::X);
+//            }
         }
-    }
+
 }
 
 void Scene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods)
@@ -127,24 +127,24 @@ void Scene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode,
 //            case GLFW_KEY_RIGHT:
 //                camera->RotateInSystem(system, -0.1f, Axis::Y);
 //                break;
-            case GLFW_KEY_W:
-                camera->TranslateInSystem(system, {0, 0.05f, 0});
-                break;
-            case GLFW_KEY_S:
-                camera->TranslateInSystem(system, {0, -0.05f, 0});
-                break;
-            case GLFW_KEY_A:
-                camera->TranslateInSystem(system, {-0.05f, 0, 0});
-                break;
-            case GLFW_KEY_D:
-                camera->TranslateInSystem(system, {0.05f, 0, 0});
-                break;
-            case GLFW_KEY_B:
-                camera->TranslateInSystem(system, {0, 0, 0.05f});
-                break;
-            case GLFW_KEY_F:
-                camera->TranslateInSystem(system, {0, 0, -0.05f});
-                break;
+//            case GLFW_KEY_W:
+//                camera->TranslateInSystem(system, {0, 0.05f, 0});
+//                break;
+//            case GLFW_KEY_S:
+//                camera->TranslateInSystem(system, {0, -0.05f, 0});
+//                break;
+//            case GLFW_KEY_A:
+//                camera->TranslateInSystem(system, {-0.05f, 0, 0});
+//                break;
+//            case GLFW_KEY_D:
+//                camera->TranslateInSystem(system, {0.05f, 0, 0});
+//                break;
+//            case GLFW_KEY_B:
+//                camera->TranslateInSystem(system, {0, 0, 0.05f});
+//                break;
+//            case GLFW_KEY_F:
+//                camera->TranslateInSystem(system, {0, 0, -0.05f});
+//                break;
         }
     }
 }

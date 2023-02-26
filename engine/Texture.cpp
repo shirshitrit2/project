@@ -54,7 +54,7 @@ Texture::Texture(const std::string& file, int dim) : name(file), type(DimToType(
                 std::string directions[] = {"Right", "Left", "Top", "Bottom", "Front", "Back"};
                 for (int i = 0; i < 6; i++) {
                     std::string fullFileName = file + directions[i] + ".bmp";
-                    debug("loading cube map texture file '", fullFileName, "'");
+//                    debug("loading cube map texture file '", fullFileName, "'");
                     data = LoadFromFile(fullFileName, &width, &height, &numComponents);
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
                 }
