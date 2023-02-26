@@ -58,8 +58,8 @@ private:
 
     Eigen::RowVector4f ambient = Eigen::RowVector4f(1.0f,0.3f,0.6f,1.0f);//(127, 127, 0, 255);
     Eigen::RowVector4f diffuse = Eigen::RowVector4f(0.5f,0.5f,0.0f,1.0f);//(25, 76, 153, 255);
-    Eigen::RowVector4f specular = Eigen::RowVector4f(0.0, 1, 1, 1);//(27, 76, 25, 127);
-    Eigen::RowVector4f lightColor=Eigen::RowVector4f (0.3f,0.0f, 0.5f, 1);
+    Eigen::RowVector4f specular = Eigen::RowVector4f(1.0f, 1.0f, 1.0f, 1.0f);//(27, 76, 25, 127);
+    Eigen::RowVector4f lightColor=Eigen::RowVector4f (0.5f,0.3f, 0.0f, 0.5f);
 };
 
 } // namespace cg3d

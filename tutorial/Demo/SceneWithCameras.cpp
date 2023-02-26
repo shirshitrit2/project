@@ -786,19 +786,19 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
     //// Blue fruits- magnets
     for(int i=0; i<3; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.5f, 5.0f, 0.9f)), "blue");
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 5.0f, 0.9f)), "blue");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Yellow fruits- score
     for(int i=0; i<10; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.6f,1.0f, 0.0f, 0.9f)), "yellow");
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.5f,0.0f,0.5f,1.0f)), "yellow");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Red fruits- win
     for(int i=0; i<1; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.5f,0.0f, 0.0f, 0.9f)), "red");
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.7f,0.0f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
@@ -810,7 +810,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     }
     //// Green fruits- immunity
     for(int i=0; i<3; i++){
-        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.5f, 0.0f, 0.9f)), "green");
+        Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 0.0f, 0.9f)), "green");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }

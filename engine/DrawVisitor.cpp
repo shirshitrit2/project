@@ -58,9 +58,10 @@ void DrawVisitor::Visit(Model* model)
         scene->Update(*program, proj, view, modelTransform);
         program->SetUniform4f("lightColor",  model->lightColor.x(),model->lightColor.y(),model->lightColor.z(),model->lightColor.w());
         program->SetUniform4f("Kai",  model->ambient.x(),model->ambient.y(),model->ambient.z(),model->ambient.w());
-        program->SetUniform4f("Ksi",  model->diffuse.x(),model->diffuse.y(),model->diffuse.z(),model->diffuse.w());
+        program->SetUniform4f("Kdi",  model->diffuse.x(),model->diffuse.y(),model->diffuse.z(),model->diffuse.w());
+        program->SetUniform4f("Ksi",  model->specular.x(),model->specular.y(),model->specular.z(),model->specular.w());
         program->SetUniform1f("specular_exponent", 5.0f);
-        program->SetUniform4f("light_position", 30.0, 0.0f, 30.0f, 1.0f);
+        program->SetUniform4f("light_position", -50.0, -50.0f, 0.0f, 1.0f);
         // glEnable(GL_LINE_SMOOTH);
         glLineWidth(model->lineWidth);
 
