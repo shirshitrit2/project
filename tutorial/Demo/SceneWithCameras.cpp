@@ -51,6 +51,14 @@ void SceneWithCameras::BuildImGui()
             ImGui::TextColored(ImVec4(1,0,0,1),"IMUNITY");
 
         }
+        if(catchbombwithimunuty){
+            if(bombBonusCounter<11){
+                ImGui::TextColored(ImVec4(0.16f,0.83f,0.59f,1),"50+ BONUS");
+            }
+            if(bombBonusCounter==11){
+                catchbombwithimunuty= false;
+            }
+        }
 
         if(speedTimer>0){
             ImGui::Text("Turbo timer:");
@@ -559,6 +567,9 @@ void SceneWithCameras::collidingSnakeWithBall(){
                     lose=true;
                 } else{
                     imunity= false;
+                    scoreCounter+=50;
+                    catchbombwithimunuty = true;
+                    bombBonusCounter =0;
                 }
 
             }
@@ -568,6 +579,7 @@ void SceneWithCameras::collidingSnakeWithBall(){
 //                speedTimer=3000;
 //                std::cout<<"speed up"<<std::endl;
                 imunity=true;
+
 
             }
 
@@ -680,18 +692,18 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         fruits.push_back(f);
     }
     //// Red fruits- win
-    for(int i=0; i<15; i++){
+    for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(9.0f,0.1f, 0.0f, 0.9f)), "red");
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
     //// Black fruits- bomb
-    for(int i=0; i<level; i++){
+    for(int i=0; i<10; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
         f.getModel()->Scale(8);
         fruits.push_back(f);
     }
-    //// Green fruits- speed
+    //// Green fruits- immunity
     for(int i=0; i<0; i++){
         Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,1.0f, 0.0f, 0.9f)), "green");
         f.getModel()->Scale(8);
@@ -764,6 +776,7 @@ void SceneWithCameras::ourUpdate(){
 
         end_counter++;
         start_counter++;
+        bombBonusCounter++;
 ////move cyls[0]
         if(cyls[0].isTranslationEmpty()){
             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
@@ -813,7 +826,14 @@ void SceneWithCameras::ourUpdate(){
             if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
                 fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
             }
-            curModel->Translate(fruits[i].getVelocity());////moving the fruits
+            if(fruits[i].getColor()=="red"){
+                curModel->Translate(fruits[i].getVelocity()*level);////moving the red fruit- change by level
+
+            }
+            else{
+                curModel->Translate(fruits[i].getVelocity());////moving the fruits
+
+            }
         }
 
 

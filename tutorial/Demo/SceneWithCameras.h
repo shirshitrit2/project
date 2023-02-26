@@ -54,13 +54,15 @@ private:
     sf::Sound mainSound;
     sf::SoundBuffer biteBuffer;
     sf::Sound bite;
-    bool imunity = false;
+    bool imunity = true;
     bool playing=false;
     bool resetPlay = false;
     std::shared_ptr<cg3d::Program> program;
     std::shared_ptr<cg3d::Material> material;
     std::shared_ptr<cg3d::Mesh> sphereMesh;
     Eigen::Matrix3f initSnakeRotation;
+    bool catchbombwithimunuty= false;
+    int bombBonusCounter =112;
 
 
 

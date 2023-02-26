@@ -14,13 +14,13 @@ Fruit::Fruit(const std::shared_ptr<cg3d::Model> &model, const std::string &color
         this->velocity = findVelocity(0.2);
     }
     if(color=="red"){////win
-        this->velocity = findVelocity(0.2);
+        this->velocity = findVelocity(0.1);
     }
     if(color=="black"){////bomb
         this->velocity= findVelocity(0.1);
     }
-    if(color=="green"){////speed
-        this->velocity= findVelocity(0.5);
+    if(color=="green"){////immunity
+        this->velocity= findVelocity(0.1);
     }
     initTree();
 
