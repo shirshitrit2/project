@@ -189,13 +189,13 @@ void SceneWithCameras::BuildImGui()
 void SceneWithCameras::reset(){
 //
 /////MAKE GLOBAL meterial ans sphere mesh
-    auto material{ std::make_shared<Material>("material", program)};
-    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
-    Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
-    f.getModel()->Scale(8);
-    fruits.push_back(f);
-    placeFruits(f);
-    root->AddChild(f.getModel());
+//    auto material{ std::make_shared<Material>("material", program)};
+//    auto sphereMesh{ObjLoader::MeshFromObjFiles("sphereMesh", "data/sphere.obj")};
+//    Fruit f (Model::Create("sphere1", sphereMesh, material, Eigen::RowVector4f(0.0f,0.0f, 0.0f, 0.9f)), "black", level*0.1);
+//    f.getModel()->Scale(8);
+//    fruits.push_back(f);
+//    placeFruits(f);
+//    root->AddChild(f.getModel());
 
 ////                Init(45.0f,800,800,0.1f,120.0f);
 
@@ -208,15 +208,17 @@ void SceneWithCameras::reset(){
         cyls[0].getRotation();
     }
 
-
+    turn=false;
     cyls[0].getCyl()->Translate(Eigen::Vector3f(-cyls[0].getCyl()->GetTranslation().x(),-cyls[0].getCyl()->GetTranslation().y(),-cyls[0].getCyl()->GetTranslation().z()));
+    cyls[0].getCyl()->Rotate(cyls[0].getCyl()->GetRotation().transpose());
 
     for(int i = 14;i > 0; i--) {
 //        cyls[i].getCyl().Tr
         Eigen::Matrix4f trans=cyls[0].getCyl()->GetTransform();
         cyls[i].getCyl()->SetTransform(trans);
+        cyls[i].getCyl()->Rotate(cyls[i].getCyl()->GetRotation().transpose());
         cyls[i].getCyl()->Translate(1.6f * scaleFactor, Axis::X);
-        cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
+//        cyls[i].getCyl()->Rotate(cyls[i - 1].getCyl()->GetRotation());
         cyls[i].getCyl()->Translate(cyls[i - 1].getCyl()->GetTranslation());
     }
     playing=true;
@@ -637,6 +639,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     //// Snake:
     Cyl cur(Model::Create("first", Mesh::Cylinder(), grass));
     cyls.push_back( cur);
+    initSnakeRotation =cyls[0].getCyl()->GetRotation();
     cyls[0].getCyl()->Scale(scaleFactor,Axis::X);
 //    cyls[0].getCyl()->Scale(scaleFactor);
 
@@ -723,152 +726,152 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
 
 
 void SceneWithCameras::ourUpdate(){
-     if(resetPlay){
-         resetPlay=false;
-         reset();
-     }else{
-         if(end_counter==15){
-             turn= false;
-             fullTurnAction= false;
-         }
-         if(start_counter==15){
-             turn=true;
-         }
-         ////move cyls[1]-cyls[n]
-         if(turn){////evryone is turning
-             for(int i = (cyls.size()-1);i>0;i--){
-                 Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
-                 cyls[i].getCyl()->SetTransform(trans);
-             }
-         }else{
-             if(start_counter>15){////evryone goinig strait
-                 for(int i = (cyls.size()-1);i>0;i--){
-                     Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-                     cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
-                 }
-             }else{////some are turning and some are going strait
-                 for(int i = start_counter+1;i<cyls.size();i++){ /////tail- going straight
-                     Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
-                     cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
-                 }
-                 for(int i = start_counter;i>0;i--){//// first i cyls - going round
-                     Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
-                     cyls[i].getCyl()->SetTransform(trans);
-                 }
-             }
+    if(resetPlay){
+        resetPlay=false;
+        reset();
+    }else{
+        if(end_counter==15){
+            turn= false;
+            fullTurnAction= false;
+        }
+        if(start_counter==15){
+            turn=true;
+        }
+        ////move cyls[1]-cyls[n]
+        if(turn){////evryone is turning
+            for(int i = (cyls.size()-1);i>0;i--){
+                Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+                cyls[i].getCyl()->SetTransform(trans);
+            }
+        }else{
+            if(start_counter>15){////evryone goinig strait
+                for(int i = (cyls.size()-1);i>0;i--){
+                    Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                    cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+                }
+            }else{////some are turning and some are going strait
+                for(int i = start_counter+1;i<cyls.size();i++){ /////tail- going straight
+                    Eigen::Matrix3f system= cyls[i].getCyl()->GetRotation();
+                    cyls[i].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+                }
+                for(int i = start_counter;i>0;i--){//// first i cyls - going round
+                    Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
+                    cyls[i].getCyl()->SetTransform(trans);
+                }
+            }
 
-         }
+        }
 
-         end_counter++;
-         start_counter++;
+        end_counter++;
+        start_counter++;
 ////move cyls[0]
-         if(cyls[0].isTranslationEmpty()){
-             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-             cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
+        if(cyls[0].isTranslationEmpty()){
+            Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+            cyls[0].getCyl()->Translate(system* Eigen::Vector3f(-1.5f*speedFactor,0,0));
 
-         } else{
-             Eigen::Vector3f trans = cyls[0].getTranslation();
-             Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
-             if(trans == Eigen::Vector3f(5,5,5)){////check if its first iteration of a turn
-                 start_counter=1;////starts counter for turning cyls
-                 fullTurnAction=true;
-                 cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());////geting the real first translation and rotation
-                 Eigen::Vector2f next_rot=cyls[0].getRotation();
-                 if(next_rot[0]==3.0){
-                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
-                 }
-                 else{
-                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
-                 }
+        } else{
+            Eigen::Vector3f trans = cyls[0].getTranslation();
+            Eigen::Matrix3f system= cyls[0].getCyl()->GetRotation();
+            if(trans == Eigen::Vector3f(5,5,5)){////check if its first iteration of a turn
+                start_counter=1;////starts counter for turning cyls
+                fullTurnAction=true;
+                cyls[0].getCyl()->Translate(system*cyls[0].getTranslation());////geting the real first translation and rotation
+                Eigen::Vector2f next_rot=cyls[0].getRotation();
+                if(next_rot[0]==3.0){
+                    cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
+                }
+                else{
+                    cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
+                }
 
-             }else if(trans ==Eigen::Vector3f(7,7,7)){////check if its thr end of a turn for cyls[0]
-                 end_counter=0;////starts counter for stoping cyls
+            }else if(trans ==Eigen::Vector3f(7,7,7)){////check if its thr end of a turn for cyls[0]
+                end_counter=0;////starts counter for stoping cyls
 
-             }else{
-                 cyls[0].getCyl()->Translate(system*trans);////if its not the end and not the start move acording to the trans and rot
-                 Eigen::Vector2f next_rot=cyls[0].getRotation();
-                 if(next_rot[0]==3.0){
-                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
-                 }
-                 else{
-                     cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
-                 }
-             }
-
-
-         }
-         //// Check that balls doesn't move outside the box
-         for (int i = 0; i < fruits.size(); i++) {
-             std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
-             Eigen::Vector3f curVeloc = fruits[i].getVelocity();
-             if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
-                 fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), curVeloc.y(), curVeloc.z()));
-             }
-             if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
-                 fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), curVeloc.y(), -curVeloc.z()));
-             }
-             if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
-                 fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
-             }
-             curModel->Translate(fruits[i].getVelocity());////moving the fruits
-         }
+            }else{
+                cyls[0].getCyl()->Translate(system*trans);////if its not the end and not the start move acording to the trans and rot
+                Eigen::Vector2f next_rot=cyls[0].getRotation();
+                if(next_rot[0]==3.0){
+                    cyls[0].getCyl()->Rotate(next_rot[1],Axis::Z);
+                }
+                else{
+                    cyls[0].getCyl()->Rotate(next_rot[1],Axis::Y);
+                }
+            }
 
 
-         ////check colision with balls
-         collidingSnakeWithBall();
+        }
+        //// Check that balls doesn't move outside the box
+        for (int i = 0; i < fruits.size(); i++) {
+            std::shared_ptr<cg3d::Model> curModel = fruits[i].getModel();
+            Eigen::Vector3f curVeloc = fruits[i].getVelocity();
+            if (curModel->GetTranslation().x() > limits / 2 || curModel->GetTranslation().x() < -limits / 2) {
+                fruits[i].setVelocity(Eigen::Vector3f(-curVeloc.x(), curVeloc.y(), curVeloc.z()));
+            }
+            if (curModel->GetTranslation().z() > limits / 2 || curModel->GetTranslation().z() < -limits / 2) {
+                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), curVeloc.y(), -curVeloc.z()));
+            }
+            if (curModel->GetTranslation().y() > limits / 2 || curModel->GetTranslation().y() < -limits / 2) {
+                fruits[i].setVelocity(Eigen::Vector3f(curVeloc.x(), -curVeloc.y(), curVeloc.z()));
+            }
+            curModel->Translate(fruits[i].getVelocity());////moving the fruits
+        }
 
 
-         ////check if the snack is going out of limit
-         if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
-             SetActive(!IsActive());
-             playing= false;
-             lose= true;
-         }
-         if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
-             SetActive(!IsActive());
-             playing=false;
-             lose=true;
-         }
-         if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
-             SetActive(!IsActive());
-             playing=false;
-             lose=true;
-         }
+        ////check colision with balls
+        collidingSnakeWithBall();
 
 
-         //// Handle speed boost timer
-         if(speedTimer>0){
-             speedTimer=speedTimer-15;
-             if(speedTimer==0) {
-                 speedFactor = speedFactor / 10;
-                 std::cout<<"speed down"<<std::endl;
+        ////check if the snack is going out of limit
+        if (cyls[0].getCyl()->GetTranslation().x() > limits / 2 || cyls[0].getCyl()->GetTranslation().x() < -limits / 2) {
+            SetActive(!IsActive());
+            playing= false;
+            lose= true;
+        }
+        if (cyls[0].getCyl()->GetTranslation().z() > limits / 2 || cyls[0].getCyl()->GetTranslation().z() < -limits / 2) {
+            SetActive(!IsActive());
+            playing=false;
+            lose=true;
+        }
+        if (cyls[0].getCyl()->GetTranslation().y() > limits / 2 || cyls[0].getCyl()->GetTranslation().y() < -limits / 2) {
+            SetActive(!IsActive());
+            playing=false;
+            lose=true;
+        }
 
-             }
-         }
 
-         //// Handle magnet boost timer
-         if(magnetTimer>0){
-             magnetTimer=magnetTimer-15;
-             if(magnetTimer==0) {
-                 scale=0.5;
-                 std::cout<<"magnet down"<<std::endl;
+        //// Handle speed boost timer
+        if(speedTimer>0){
+            speedTimer=speedTimer-15;
+            if(speedTimer==0) {
+                speedFactor = speedFactor / 10;
+                std::cout<<"speed down"<<std::endl;
 
-             }
-         }
+            }
+        }
 
-         //// Check self collision of the snake
-         for(int i=1;i<cyls.size();i++){
-             if(isSnakeCollide(i)){
+        //// Handle magnet boost timer
+        if(magnetTimer>0){
+            magnetTimer=magnetTimer-15;
+            if(magnetTimer==0) {
+                scale=0.5;
+                std::cout<<"magnet down"<<std::endl;
+
+            }
+        }
+
+        //// Check self collision of the snake
+        for(int i=1;i<cyls.size();i++){
+            if(isSnakeCollide(i)){
 //            lose=true;
-             }
-         }
+            }
+        }
 
 
 
 
 
 
-     }
+    }
 
 
 }
@@ -908,18 +911,18 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
         if(key == GLFW_KEY_DOWN){
             if(!fullTurnAction){
-             loadTurn(true,true);}
+                loadTurn(true,true);}
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
         if(key == GLFW_KEY_RIGHT){
             if(!fullTurnAction){
-            loadTurn(false, false);}
+                loadTurn(false, false);}
 
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
         if(key == GLFW_KEY_LEFT){
             if(!fullTurnAction){
-            loadTurn(true, false);}
+                loadTurn(true, false);}
 
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
@@ -952,8 +955,8 @@ void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
             Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
             Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
             float cur_time = i/(timeIntervals*fac);
-           cyls[0].setTranslation(getPosition(cur_time,p1,p2,p3)-p1);
-           cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
+            cyls[0].setTranslation(getPosition(cur_time,p1,p2,p3)-p1);
+            cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
         }
         cyls[0].setTranslation(Eigen::Vector3f(7,7,7));
 
@@ -1054,21 +1057,21 @@ void SceneWithCameras::placeFruits(Fruit f){
     offset = -limits/2;
     range =  limits/2 - offset +1;
     scale=1;
-     float x= (rand() % range + offset);
-     float y= (rand() % range + offset);
-     float z= (rand() % range + offset);
+    float x= (rand() % range + offset);
+    float y= (rand() % range + offset);
+    float z= (rand() % range + offset);
 
-     f.getModel()->Translate(Eigen::Vector3f(x,y,z));
+    f.getModel()->Translate(Eigen::Vector3f(x,y,z));
 
-     while(isCollide(f)) {
-         f.getModel()->Translate(Eigen::Vector3f(-x,-y,-z));
-         float x= (rand() % range + offset);
-         float y= (rand() % range + offset); // should be random too
-         float z= (rand() % range + offset);
+    while(isCollide(f)) {
+        f.getModel()->Translate(Eigen::Vector3f(-x,-y,-z));
+        float x= (rand() % range + offset);
+        float y= (rand() % range + offset); // should be random too
+        float z= (rand() % range + offset);
 
-         f.getModel()->Translate(Eigen::Vector3f(x,y,z));
-     }
-     scale=0.5;
+        f.getModel()->Translate(Eigen::Vector3f(x,y,z));
+    }
+    scale=0.5;
 }
 
 

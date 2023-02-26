@@ -58,6 +58,9 @@ private:
     bool playing=false;
     bool resetPlay = false;
     std::shared_ptr<cg3d::Program> program;
+    std::shared_ptr<cg3d::Material> material;
+    std::shared_ptr<cg3d::Mesh> sphereMesh;
+    Eigen::Matrix3f initSnakeRotation;
 
 
 
