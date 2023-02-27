@@ -47,12 +47,12 @@ void SceneWithCameras::BuildImGui()
 
 
         ImGui::Text("Score:");
-        std::string t = std::to_string(scoreCounter);
+        std::string t = std::to_string(scoreCounter+levelSCore);
         char const *n_char = t.c_str();
         ImGui::SameLine(0);
         ImGui::Text(n_char);
 
-        if(scoreCounter>=100){
+        if(scoreCounter+levelSCore>=100){
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f,0.0f,0.0f,1.0f)); // Set text color to yellow
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f,1.0f,0.0f,1.0f)); // Set text color to yellow
             if (ImGui::Button("Add winning ball (-100 points)")){
@@ -61,7 +61,7 @@ void SceneWithCameras::BuildImGui()
                 fruits.push_back(f);
                 placeFruits(f);
                 root->AddChild(f.getModel());
-                scoreCounter-=100;
+                levelSCore-=100;
             }
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
@@ -153,7 +153,7 @@ void SceneWithCameras::BuildImGui()
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f)," finished!");
             ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
             ImGui::SetCursorPosX(330); // set x position of text
-            std::string t2 = std::to_string(scoreCounter);
+            std::string t2 = std::to_string(scoreCounter+levelSCore);
             char const *n_char2 = t2.c_str();
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Score: ");
             ImGui::SameLine(0);
@@ -168,12 +168,15 @@ void SceneWithCameras::BuildImGui()
             if (ImGui::Button("Next level")){
                 win=false;
                 reset(1);
+                scoreCounter=scoreCounter+levelSCore;
+                levelSCore=0;
                 ready.play();
             }
             ImGui::SetCursorPosX(315);
 
             if (ImGui::Button("play again")){
                 reset(0);
+                levelSCore=0;
                 ready.play();
             }
 
@@ -204,7 +207,7 @@ void SceneWithCameras::BuildImGui()
             ImGui::TextColored(ImVec4(0.0f,0.0f,0.0f,1.0f),"Game over! ");
             ImGui::SetWindowFontScale(2.0f); // set font scale to 2x the default size
             ImGui::SetCursorPosX(330); // set x position of text
-            std::string t2 = std::to_string(scoreCounter);
+            std::string t2 = std::to_string(scoreCounter+levelSCore);
             char const *n_char2 = t2.c_str();
             ImGui::TextColored(ImVec4(0.68f,0.68f,0.05f,1.0f),"Score: ");
             ImGui::SameLine(0);
@@ -216,7 +219,8 @@ void SceneWithCameras::BuildImGui()
 
             if (ImGui::Button("play again")){
                 reset(0);
-                scoreCounter=0;
+//                scoreCounter=0;
+                levelSCore=0;
                 ready.play();
             }
             ImGui::SetCursorPosX(355);
@@ -362,6 +366,7 @@ void SceneWithCameras::reset(int j){
     fullTurnAction= false;
     imunity= false;
     magnetTimer=0;
+    scale=0.5;
 
 
 }
@@ -540,13 +545,13 @@ bool SceneWithCameras::isSnakeCollide(int i){
     Eigen::AlignedBox<double,3> box2=tree2.m_box;
 
 //    double scale=1;
-    double a0=box1.sizes()[0]*scale/2;
-    double a1=box1.sizes()[1]*scale/2;
-    double a2=box1.sizes()[2]*scale/2;
+    double a0=box1.sizes()[0]*0.5/2;
+    double a1=box1.sizes()[1]*0.5/2;
+    double a2=box1.sizes()[2]*0.5/2;
 
-    double b0=box2.sizes()[0]*scale/2;
-    double b1=box2.sizes()[1]*scale/2;
-    double b2=box2.sizes()[2]*scale/2;
+    double b0=box2.sizes()[0]*0.5/2;
+    double b1=box2.sizes()[1]*0.5/2;
+    double b2=box2.sizes()[2]*0.5/2;
 
     Eigen::MatrixXd A=model1->GetRotation().cast<double>();
     Eigen::MatrixXd B=model2->GetRotation().cast<double>();
@@ -681,8 +686,9 @@ void SceneWithCameras::collidingSnakeWithBall(){
             //// Score balls.
             if(fruits[i].getColor()=="yellow"){
                 money.play();
-                scoreCounter=scoreCounter+10;
-                std::cout<< scoreCounter <<std::endl;
+//                scoreCounter=scoreCounter+10;
+                levelSCore=levelSCore+10;
+//                std::cout<< scoreCounter <<std::endl;
             }
             //// Magnet balls.
             if(fruits[i].getColor()=="blue"){
@@ -707,7 +713,8 @@ void SceneWithCameras::collidingSnakeWithBall(){
                 } else{
                     money.play();
                     imunity= false;
-                    scoreCounter+=50;
+//                    scoreCounter+=50;
+                    levelSCore+=50;
                     catchbombwithimunuty = true;
                     bombBonusCounter =0;
                 }

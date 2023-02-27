@@ -65,6 +65,7 @@ private:
     int bombBonusCounter =112;
     ImTextureID texture_id;
     bool stopturn=false;
+    int levelSCore=0;
 
 
 
