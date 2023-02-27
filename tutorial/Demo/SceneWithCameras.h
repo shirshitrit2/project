@@ -49,8 +49,6 @@ private:
     int end_counter=180;
     int start_counter= 180;
     bool fullTurnAction=false;
-    double snakescale;
-    double  fruitscale;
     sf::SoundBuffer mainBuffer;
     sf::Sound mainSound;
     sf::SoundBuffer biteBuffer, moneybuffer, trybuffer, readybuffer, victorybuffer;
@@ -67,7 +65,6 @@ private:
     int bombBonusCounter =112;
     ImTextureID texture_id;
     bool stopturn=false;
-    int check=-23;
 
 
 
