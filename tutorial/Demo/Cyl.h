@@ -15,11 +15,14 @@ public:
 
      Eigen::Vector3f getTranslation() ;
      Eigen::Vector2f getRotation() ;
+    Eigen::Matrix4f getTrransforms();
 
     void setTranslation(Eigen::Vector3f translation);
     void setRotation(Eigen::Vector2f rotation);
+    void setTransform(Eigen::Matrix4f trans);
     bool isRotationEmpty();
     bool isTranslationEmpty();
+    bool isTransformEmpty();
     const std::shared_ptr<cg3d::Model> &getCyl() const;
 
         private:
@@ -28,6 +31,7 @@ public:
         public:
     std::queue<Eigen::Vector3f> Translations;
     std::queue<Eigen::Vector2f> Rotations;
+    std::queue<Eigen::Matrix4f> Transforms;
 
 
 

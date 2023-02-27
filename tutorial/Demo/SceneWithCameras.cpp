@@ -298,7 +298,7 @@ void SceneWithCameras::BuildImGui()
                 std::thread([&]() {
                     while (IsActive()) {
                         this->ourUpdate();
-                        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     }
                 }).detach();
             }
@@ -802,7 +802,6 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         cyls[i].getCyl()->Translate(cyls[i-1].getCyl()->GetTranslation());
         root->AddChild(cyls[i].getCyl());
 
-
     }
 //    cyls[0].getCyl()->Translate({0.8f*scaleFactor,0,0});
     cyls[0].getCyl()->AddChild(camList[1]);
@@ -878,7 +877,7 @@ void SceneWithCameras::ourUpdate(){
 //    if(resetPlay){
 //        resetPlay=false;
 //        reset();
-     if(playing){
+    if(playing){
 
         if(end_counter==cyls.size()){
             turn= false;
@@ -888,7 +887,7 @@ void SceneWithCameras::ourUpdate(){
             turn=true;
         }
         ////move cyls[1]-cyls[n]
-        if(turn){////evryone is turning
+        if(turn || stopturn){////evryone is turning
             for(int i = (cyls.size()-1);i>0;i--){
                 Eigen::Matrix4f trans=cyls[i-1].getCyl()->GetTransform();
                 cyls[i].getCyl()->SetTransform(trans);
@@ -1048,188 +1047,221 @@ void SceneWithCameras::LoadObjectFromFileDialog()
     auto shape = Model::Create(filename, carbon);
 }
 
-void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods)
-{
-    Eigen::Matrix3f system=cyls[0].getCyl()->GetRotation().transpose();
-    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-    {
+void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, int scancode, int action, int mods) {
+    Eigen::Matrix3f system = cyls[0].getCyl()->GetRotation().transpose();
+    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
         if (key == GLFW_KEY_SPACE)
-            SetActive(!IsActive());
+//            SetActive(!IsActive());
 
         // keys 1-9 are objects 1-9 (objects[0] - objects[8]), key 0 is object 10 (objects[9])
         if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9) {
             if (int index; (index = (key - GLFW_KEY_1 + 10) % 10) < camList.size())
                 SetCamera(index);
         }
-        if(key == GLFW_KEY_UP){
-            if(!fullTurnAction && playing){
-                loadTurn(false,true);}
+        if (key == GLFW_KEY_UP) {
+            if (fullTurnAction) {
+                stopturn = true;
+                while (!cyls[0].isTranslationEmpty())
+                    cyls[0].getTranslation();
+                while (!cyls[0].isRotationEmpty())
+                    cyls[0].getRotation();
+            }
+            if ( playing) {
+                loadTurn(false, true);
+            }
         }
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Z);
-        if(key == GLFW_KEY_DOWN){
-            if(!fullTurnAction && playing){
-                loadTurn(true,true);}
+        if (key == GLFW_KEY_DOWN) {
+            if (fullTurnAction) {
+                stopturn = true;
+                while (!cyls[0].isTranslationEmpty())
+                    cyls[0].getTranslation();
+                while (!cyls[0].isRotationEmpty())
+                    cyls[0].getRotation();
+            }
+            if ( playing) {
+                loadTurn(true, true);
+            }
         }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Z);
-        if(key == GLFW_KEY_RIGHT){
-            if(!fullTurnAction && playing){
-                loadTurn(false, false);}
+        if (key == GLFW_KEY_RIGHT) {
+            if (fullTurnAction) {
+                stopturn = true;
+                while (!cyls[0].isTranslationEmpty())
+                    cyls[0].getTranslation();
+                while (!cyls[0].isRotationEmpty())
+                    cyls[0].getRotation();
+            }
 
+                if (playing) {
+                    loadTurn(false, false);
+                }
         }
+
+
 //            cyls[0]->RotateInSystem(system, -0.1f, Axis::Y);
-        if(key == GLFW_KEY_LEFT){
-            if(!fullTurnAction && playing){
-                loadTurn(true, false);}
+            if (key == GLFW_KEY_LEFT) {
+                if (fullTurnAction) {
+                    stopturn = true;
+                    while (!cyls[0].isTranslationEmpty())
+                        cyls[0].getTranslation();
+                    while (!cyls[0].isRotationEmpty())
+                        cyls[0].getRotation();
+                }
+                if (playing) {
+                    loadTurn(true, false);
+                }
 
-        }
+            }
 //            cyls[0]->RotateInSystem(system, 0.1f, Axis::Y);
 
+        }
+
+        SceneWithImGui::KeyCallback(nullptr, x, y, key, scancode, action, mods);
     }
 
-    SceneWithImGui::KeyCallback(nullptr, x, y, key, scancode, action, mods);
-}
 
-
-
-void SceneWithCameras::loadTurn(bool direction, bool isAxisZ){
-    float dir=-1.0;
-    if(direction){
-        dir=1.0;
-    }
-    float timeIntervals=40.0;
-    float time = 1.0f/(timeIntervals*fac);
-
-    if(isAxisZ){ ////down
+    void SceneWithCameras::loadTurn(bool direction, bool isAxisZ) {
+        float dir = -1.0;
+        if (direction) {
+            dir = 1.0;
+        }
+        float timeIntervals = 40.0;
+        float time = 1.0f / (timeIntervals * fac);
+        if (isAxisZ) { ////down
 //        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
 //        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
 //        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
 //        cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
 //        cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
-        cyls[0].setTranslation(Eigen::Vector3f(5,5,5));
+            cyls[0].setTranslation(Eigen::Vector3f(5, 5, 5));
 
-        for(float i=1.0f;i<=(timeIntervals*fac);i=i+1.0f){
-            Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
-            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
-            float cur_time = i/(timeIntervals*fac);
-            cyls[0].setTranslation(getPosition(cur_time,p1,p2,p3)-p1);
-            cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
-        }
-        cyls[0].setTranslation(Eigen::Vector3f(7,7,7));
 
-    } else{////right
+            for (float i = 1.0f; i <= (timeIntervals * fac) / 10; i = i + 1.0f) {
+                Eigen::Vector3f p1 = cyls[0].getCyl()->GetTranslation();
+                Eigen::Vector3f p2 = p1 + Eigen::Vector3f(-2 * fac, 0, 0);
+                Eigen::Vector3f p3 = p1 + Eigen::Vector3f(-2 * fac, dir * 0.1 * fac, 0);
+                float cur_time = i / (timeIntervals * fac);
+                cyls[0].setTranslation(getPosition(cur_time, p1, p2, p3) - p1);
+                cyls[0].setRotation(Eigen::Vector2f(3.0, 1.57079633f * time * dir));
+            }
+            cyls[0].setTranslation(Eigen::Vector3f(7, 7, 7));
+
+        } else {////right
 //
-        cyls[0].setTranslation(Eigen::Vector3f(5,5,5));
+            cyls[0].setTranslation(Eigen::Vector3f(5, 5, 5));
 
-        for(float i=1.0f;i<=(timeIntervals*fac);i=i+1.0f){
-            Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
-            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
-            Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,0,dir*0.1*fac);
-            float cur_time = i/(timeIntervals*fac);
-            Eigen::Vector3f trans =getPosition(cur_time,p1,p2,p3)-p1;
-            cyls[0].setTranslation(trans);
-            cyls[0].setRotation(Eigen::Vector2f (2.0,1.57079633f*time*dir));
+            for (float i = 1.0f; i <= (timeIntervals * fac) / 10; i = i + 1.0f) {
+                Eigen::Vector3f p1 = cyls[0].getCyl()->GetTranslation();
+                Eigen::Vector3f p2 = p1 + Eigen::Vector3f(-2 * fac, 0, 0);
+                Eigen::Vector3f p3 = p1 + Eigen::Vector3f(-2 * fac, 0, dir * 0.1 * fac);
+                float cur_time = i / (timeIntervals * fac);
+                Eigen::Vector3f trans = getPosition(cur_time, p1, p2, p3) - p1;
+                cyls[0].setTranslation(trans);
+                cyls[0].setRotation(Eigen::Vector2f(2.0, 1.57079633f * time * dir));
+            }
+            cyls[0].setTranslation(Eigen::Vector3f(7, 7, 7));
         }
-        cyls[0].setTranslation(Eigen::Vector3f(7,7,7));
-    }
 //    std::queue<Eigen::Vector3f> copy=cyls[0].Translations;
 //
 //    while(!copy.empty()){
 //        std::cout << copy.front() << " "<< std::endl;
 //        copy.pop();
 //    }
-}
+///////////////////////checking////////////////////////////////////
+//    if(isAxisZ){ ////down
+////        Eigen::Vector3f p1= cyls[0].getCyl()->GetTranslation();
+////        Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac,0,0);
+////        Eigen::Vector3f p3 = p1+Eigen::Vector3f(-2*fac,dir*0.1*fac,0);
+////        cyls[0].setTranslation(getPosition(time,p1,p2,p3)-p1);
+////        cyls[0].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
+//
+//
+////        Eigen::Matrix3f system= cyls[1].getCyl()->GetRotation();
+////        cyls[1].setTranslation(system* Eigen::Vector3f(-1.5f*speedFactor,0,0);)
+//        cyls[1].setTranslation(Eigen::Vector3f(5,5,5));
+//
+//
+//        for(float i=1.0f;i<=(timeIntervals*fac)/10;i=i+1.0f){
+//            Eigen::Vector3f p1= cyls[1].getCyl()->GetTranslation();
+////            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac*2,0,0);
+//            Eigen::Vector3f p3 = Eigen::Vector3f(cyls[0].getCyl()->GetTranslation().x(),cyls[0].getCyl()->GetTranslation().y(),cyls[0].getCyl()->GetTranslation().z());
+//            Eigen::Vector3f p2 = Eigen::Vector3f((p1.x()+p3.x())/2,(p1.y()+p3.y())/2,(p1.z()+p3.z())/2 );
+//            float cur_time = i/(timeIntervals*fac);
+//            cyls[1].setTranslation(getPosition(cur_time,p1,p2,p3)-p1);
+//            cyls[1].setRotation(Eigen::Vector2f (3.0,1.57079633f*time*dir));
+//        }
+//        cyls[1].setTranslation(Eigen::Vector3f(7,7,7));
+//
+//    } else{////right
+////
+//        cyls[1].setTranslation(Eigen::Vector3f(5,5,5));
+////        cyls[1].setTranslation(Eigen::Vector3f(5,5,5));
+//
+//        for(float i=1.0f;i<=(timeIntervals*fac)/10;i=i+1.0f){
+//            Eigen::Vector3f p1= cyls[1].getCyl()->GetTranslation();
+////            Eigen::Vector3f p2 = p1+Eigen::Vector3f(-2*fac*2,0,0);
+//            Eigen::Vector3f p3 = Eigen::Vector3f(cyls[0].getCyl()->GetTranslation().x(),cyls[0].getCyl()->GetTranslation().y(),cyls[0].getCyl()->GetTranslation().z());
+//            Eigen::Vector3f p2 = Eigen::Vector3f((p1.x()+p3.x())/2,(p1.y()+p3.y())/2,(p1.z()+p3.z())/2 );
+//            float cur_time = i/(timeIntervals*fac);
+//            Eigen::Vector3f trans =getPosition(cur_time,p1,p2,p3)-p1;
+//            cyls[1].setTranslation(trans);
+//            cyls[1].setRotation(Eigen::Vector2f (2.0,1.57079633f*time*dir));
+//        }
+//        cyls[1].setTranslation(Eigen::Vector3f(7,7,7));
+//    }
+        ///////////////////////checking////////////////////////////////////
+
+    }
 
 
-Eigen::Vector3f SceneWithCameras::getPosition(float time, Eigen::Vector3f p0, Eigen::Vector3f p1,Eigen::Vector3f p2) {
-    if(time < 0 || time > 1)
-        throw std::invalid_argument("Time out of bounds for curve");
-    Eigen::Vector3f pos = p1 + ( pow((1-time),2)*(p0-p1) ) + ( pow(time,2)*(p2-p1) );
+    Eigen::Vector3f
+    SceneWithCameras::getPosition(float time, Eigen::Vector3f p0, Eigen::Vector3f p1, Eigen::Vector3f p2) {
+        if (time < 0 || time > 1)
+            throw std::invalid_argument("Time out of bounds for curve");
+        Eigen::Vector3f pos = p1 + (pow((1 - time), 2) * (p0 - p1)) + (pow(time, 2) * (p2 - p1));
+//    Eigen::Vector3f pos = p1*2*time*(1-time) + ( pow((1-time),2)*(p0) ) + ( pow(time,2)*(p2) );
+
 //    pos += pow((1-time), 2)  * p1;
 //    pos+=2 * pow((1-time), 1) * pow(time, 1) * p2;
-    return pos;
-}
-
-
-void SceneWithCameras::ViewportSizeCallback(Viewport* _viewport)
-{
-    for (auto& cam: camList)
-        cam->SetProjection(float(_viewport->width) / float(_viewport->height));
-
-    // note: we don't need to call Scene::ViewportSizeCallback since we are setting the projection of all the cameras
-}
-
-void SceneWithCameras::AddViewportCallback(Viewport* _viewport)
-{
-    viewport = _viewport;
-
-    Scene::AddViewportCallback(viewport);
-}
-
-
-
-void SceneWithCameras::handleSound() {
-    ALCdevice* device = alcOpenDevice(nullptr);
-    ALCcontext* context = alcCreateContext(device, nullptr);
-    alcMakeContextCurrent(context);
-
-    // Load sound file
-    ALuint buffer;
-    alGenBuffers(1, &buffer);
-
-    ALsizei size, frequency;
-    ALenum format;
-    ALvoid* data;
-
-
-//    alutLoadWAVFile("sound.wav", &format, &data, &size, &frequency);
-//    alBufferData(buffer, format, data, size, frequency);
-//    alutUnloadWAV(format, data, size, frequency);
-
-    // Create source and attach buffer
-    ALuint source;
-    alGenSources(1, &source);
-
-    alSourcei(source, AL_BUFFER, buffer);
-    alSourcei(source, AL_LOOPING, AL_TRUE); // Set looping to true
-
-    // Play the sound
-    alSourcePlay(source);
-
-    // Wait for program to exit
-    std::cout << "Press enter to exit." << std::endl;
-    std::cin.get();
-
-    // Clean up
-    alDeleteSources(1, &source);
-    alDeleteBuffers(1, &buffer);
-
-    alcMakeContextCurrent(nullptr);
-    alcDestroyContext(context);
-    alcCloseDevice(device);
-}
-
-void SceneWithCameras::placeFruits(Fruit f){
-    offset = -limits/2;
-    range =  limits/2 - offset +1;
-    scale=1;
-    float x= (rand() % range + offset);
-    float y= (rand() % range + offset);
-    float z= (rand() % range + offset);
-
-    f.getModel()->Translate(Eigen::Vector3f(x,y,z));
-
-    while(isCollide(f)) {
-        f.getModel()->Translate(Eigen::Vector3f(-x,-y,-z));
-        float x= (rand() % range + offset);
-        float y= (rand() % range + offset); // should be random too
-        float z= (rand() % range + offset);
-
-        f.getModel()->Translate(Eigen::Vector3f(x,y,z));
+        return pos;
     }
-    scale=0.5;
-}
 
+
+    void SceneWithCameras::ViewportSizeCallback(Viewport *_viewport) {
+        for (auto &cam: camList)
+            cam->SetProjection(float(_viewport->width) / float(_viewport->height));
+
+        // note: we don't need to call Scene::ViewportSizeCallback since we are setting the projection of all the cameras
+    }
+
+    void SceneWithCameras::AddViewportCallback(Viewport *_viewport) {
+        viewport = _viewport;
+
+        Scene::AddViewportCallback(viewport);
+    }
+
+
+    void SceneWithCameras::placeFruits(Fruit f) {
+        offset = -limits / 2;
+        range = limits / 2 - offset + 1;
+        scale = 1;
+        float x = (rand() % range + offset);
+        float y = (rand() % range + offset);
+        float z = (rand() % range + offset);
+
+        f.getModel()->Translate(Eigen::Vector3f(x, y, z));
+
+        while (isCollide(f)) {
+            f.getModel()->Translate(Eigen::Vector3f(-x, -y, -z));
+            float x = (rand() % range + offset);
+            float y = (rand() % range + offset); // should be random too
+            float z = (rand() % range + offset);
+
+            f.getModel()->Translate(Eigen::Vector3f(x, y, z));
+        }
+        scale = 0.5;
+    }
 
 

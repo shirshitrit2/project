@@ -66,9 +66,8 @@ private:
     bool catchbombwithimunuty= false;
     int bombBonusCounter =112;
     ImTextureID texture_id;
-    int guiwidth=0, guiheight=0, guichannels=0;
-//    Fruit bomb;
-
+    bool stopturn=false;
+    int check=-23;
 
 
 
