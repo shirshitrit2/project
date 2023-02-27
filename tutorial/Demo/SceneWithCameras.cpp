@@ -676,6 +676,8 @@ void SceneWithCameras::collidingSnakeWithBall(){
         if(findSmallestBox(snakeTree,fruits[i].getTree(), fruits[i])){
             placeFruits(fruits[i]);
             bite.setVolume(100);
+            addCyl();
+
             //// Score balls.
             if(fruits[i].getColor()=="yellow"){
                 money.play();
@@ -1066,16 +1068,7 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
         if (key == GLFW_KEY_SPACE){
-            Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), sponge));
-            cyls.push_back( cur);
-//        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
-            cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
-            cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
-            cyls[cyls.size()-1].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
-//        cyls[i].getCyl()->Translate(Eigen::Vector3f(0.8f*scaleFactor,0,0));
-//            cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
-//            cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
-            root->AddChild(cyls[cyls.size()-1].getCyl());
+            addCyl();
         }
 //            SetActive(!IsActive());
 
@@ -1192,8 +1185,22 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
         return pos;
     }
 
+void SceneWithCameras::addCyl(){
+    Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), sponge));
+    cyls.push_back( cur);
+//        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
+    cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
+    cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
+    cyls[cyls.size()-1].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
+//        cyls[i].getCyl()->Translate(Eigen::Vector3f(0.8f*scaleFactor,0,0));
+//            cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
+//            cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
+    root->AddChild(cyls[cyls.size()-1].getCyl());
+}
 
-    void SceneWithCameras::ViewportSizeCallback(Viewport *_viewport) {
+
+
+void SceneWithCameras::ViewportSizeCallback(Viewport *_viewport) {
         for (auto &cam: camList)
             cam->SetProjection(float(_viewport->width) / float(_viewport->height));
 

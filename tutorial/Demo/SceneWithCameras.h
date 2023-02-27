@@ -79,6 +79,7 @@ public:
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     bool isSnakeCollide(int i);
     void loadTurn(bool direction, bool isAxisZ);
+    void addCyl();
     Eigen::Vector3f getPosition(float time, Eigen::Vector3f p0, Eigen::Vector3f p1,Eigen::Vector3f p2);
 private:
     //inline bool IsActive() const { return animate; };
