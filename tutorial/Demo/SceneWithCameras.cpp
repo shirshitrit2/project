@@ -650,6 +650,14 @@ void SceneWithCameras::initSnakeTree(){
     Eigen::MatrixXi F1 = mesh[0]->data[0].faces;
     snakeTree.init(V1,F1);
 }
+igl::AABB<Eigen::MatrixXd,3> SceneWithCameras::initSnakeTree(int i){
+    auto mesh = cyls[i].getCyl()->GetMeshList();
+    Eigen::MatrixXd V1 = mesh[0]->data[0].vertices;
+    Eigen::MatrixXi F1 = mesh[0]->data[0].faces;
+    igl::AABB<Eigen::MatrixXd,3> tree;
+    tree.init(V1,F1);
+    return tree;
+}
 
 
 //void SceneWithCameras::collidingBalls(){
@@ -727,14 +735,9 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     sponge = std::make_shared<Material>("carbon", program1);
     sponge->AddTexture(0, "textures/sponge4.jpeg", 2);
 
-    //// Sound:
-//    sf::SoundBuffer buffer;
-
+    //// Sounds:
     mainBuffer.loadFromFile("textures/spongebob.wav");
-    if (!biteBuffer.loadFromFile("textures/bite.wav"))
-    {
-        std::cout << "Error: Failed to load sound file." << std::endl;
-    }
+    biteBuffer.loadFromFile("textures/bite.wav");
     moneybuffer.loadFromFile("textures/krab.wav");
     readybuffer.loadFromFile("textures/ready.wav");
     victorybuffer.loadFromFile("textures/victory.wav");
@@ -750,11 +753,7 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
     mainSound.play();
     mainSound.setVolume(30);
 
-//
-//    while (sound.getStatus() == sf::Sound::Playing)
-//    {
-//        // Wait until the sound finishes playing
-//    }
+
 
     //// Cameras:
     camList.resize(camList.capacity());
@@ -1029,9 +1028,12 @@ void SceneWithCameras::ourUpdate(){
         }
 
         //// Check self collision of the snake
-        for(int i=1;i<cyls.size();i++){
+        for(int i=14;i<cyls.size();i++){
             if(isSnakeCollide(i)){
-//            lose=true;
+                playing=false;
+                lose=true;
+                tryagain.play();
+
             }
         }
 
@@ -1064,7 +1066,16 @@ void SceneWithCameras::KeyCallback(Viewport* _viewport, int x, int y, int key, i
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
         if (key == GLFW_KEY_SPACE){
-
+            Cyl cur(Model::Create("cylinder", Mesh::Cylinder(), sponge));
+            cyls.push_back( cur);
+//        cyls[i].getCyl()->Scale(scaleFactor,Axis::X);
+            cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
+            cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
+            cyls[cyls.size()-1].getCyl()->Translate(1.6f*scaleFactor,Axis::X);
+//        cyls[i].getCyl()->Translate(Eigen::Vector3f(0.8f*scaleFactor,0,0));
+//            cyls[cyls.size()-1].getCyl()->Rotate(cyls[cyls.size()-2].getCyl()->GetRotation());
+//            cyls[cyls.size()-1].getCyl()->Translate(cyls[cyls.size()-2].getCyl()->GetTranslation());
+            root->AddChild(cyls[cyls.size()-1].getCyl());
         }
 //            SetActive(!IsActive());
 

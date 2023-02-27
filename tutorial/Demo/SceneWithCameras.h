@@ -95,6 +95,7 @@ private:
     bool findSmallestBox(igl::AABB<Eigen::MatrixXd,3> tree1,igl::AABB<Eigen::MatrixXd,3> tree2,Fruit f);
     bool isCollide(Fruit f);
     void initSnakeTree();
+    igl::AABB<Eigen::MatrixXd,3> initSnakeTree(int i);
     void collidingBalls();
     void collidingSnakeWithBall();
     void handleSound();
