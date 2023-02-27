@@ -6,6 +6,7 @@
 #include "Fruit.h"
 #include "Cyl.h"
 #include "imgui.h"
+#include "SkinnedSnake.h"
 #include <SFML/Audio.hpp>
 
 
@@ -22,7 +23,7 @@ private:
     std::shared_ptr<cg3d::Program> program=std::make_shared<cg3d::Program>("shaders/phongShader");;
     std::shared_ptr<cg3d::Program> program1 = std::make_shared<cg3d::Program>("shaders/basicShader"); //
     std::shared_ptr<cg3d::Material> material;
-    std::shared_ptr<cg3d::Mesh> sphereMesh;
+    std::shared_ptr<cg3d::Mesh> sphereMesh, snakeMesh;
 
     cg3d::Viewport* viewport = nullptr;
 
@@ -61,6 +62,7 @@ private:
 
     Eigen::Matrix3f initSnakeRotation;
     ImTextureID texture_id;
+    std::shared_ptr<SkinnedSnake> skinnedSnake;
 
 
 public:

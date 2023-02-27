@@ -23,8 +23,7 @@
 #include <SFML/Audio.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-
+#include "SkinnedSnake.h"
 
 
 using namespace cg3d;
@@ -397,6 +396,13 @@ void SceneWithCameras::Init(float fov, int width, int height, float near, float 
         root->AddChild(fruits[i].getModel());
     }
 
+    ////    Skinning
+//    snakeMesh = {IglLoader::MeshFromFiles("snake", "textures/snake2.obj")};
+//    snake= Model::Create("snake", snakeMesh, material);
+//    skinnedSnake=std::make_shared<SkinnedSnake>(SkinnedSnake(snake, cyls));
+//    skinnedSnake->applySkin();
+//    root->AddChild(snake);
+
     background->Scale(limits, Axis::XYZ);
     background->SetPickable(false);
     background->SetStatic();
@@ -539,6 +545,9 @@ void SceneWithCameras::ourUpdate(){
                 tryagain.play();
             }
         }
+
+        ///// skinning
+//        skinnedSnake->applySkin();
     }
 }
 

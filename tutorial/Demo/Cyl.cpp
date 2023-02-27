@@ -18,11 +18,7 @@ Cyl::Cyl(const std::shared_ptr<cg3d::Model> &cyl) : cyl(cyl) {}
     return curr;
 }
 
-Eigen::Matrix4f Cyl::getTrransforms(){
-    Eigen::Matrix4f curr= Transforms.front();
-    Transforms.pop();
-    return curr;
-}
+
 
 
 void Cyl::setTranslation(Eigen::Vector3f translation) {
@@ -33,9 +29,7 @@ void Cyl::setRotation(Eigen::Vector2f rotation) {
     Rotations.push(rotation);
 }
 
-void Cyl::setTransform(Eigen::Matrix4f trans){
-    Transforms.push(trans);
-}
+
 
 
 const std::shared_ptr<cg3d::Model> &Cyl::getCyl() const {
@@ -49,6 +43,4 @@ bool Cyl::isTranslationEmpty(){
     return Translations.empty();
 }
 
-bool Cyl::isTransformEmpty(){
-    return  Transforms.empty();
-}
+
